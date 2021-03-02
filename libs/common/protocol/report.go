@@ -25,7 +25,7 @@
  */
 package protocol
 
-import . "github.com/dimchat/core-go/protocol"
+import . "github.com/dimchat/core-go/dkd"
 
 const (
 	REPORT = "report"

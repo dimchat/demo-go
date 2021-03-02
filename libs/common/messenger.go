@@ -27,7 +27,6 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/demo-go/libs/common/cpu"
 	. "github.com/dimchat/demo-go/libs/common/protocol"

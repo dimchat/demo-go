@@ -29,6 +29,7 @@ import (
 	. "github.com/dimchat/demo-go/libs/common/db"
 	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -37,32 +38,36 @@ import (
  *  ~~~~~~~~~~~~~~~~~~~
  */
 type AddressNameDataSource struct {
-	AddressNameSource
+	AddressNameService
 
 	_ansTable AddressNameTable
 }
 
-func (ans *AddressNameDataSource) Init(service IAddressNameService) *AddressNameDataSource {
-	if ans.AddressNameSource.Init(service) != nil {
+func (ans *AddressNameDataSource) Init() *AddressNameDataSource {
+	if ans.AddressNameService.Init() != nil {
 		ans._ansTable = nil
 	}
 	return ans
 }
 
+func (ans *AddressNameDataSource) self() IAddressNameService {
+	return ans.AddressNameService.Self().(IAddressNameService)
+}
+
 func (ans *AddressNameDataSource) GetID(alias string) ID {
-	identifier := ans.AddressNameSource.GetID(alias)
+	identifier := ans.self().GetID(alias)
 	if identifier == nil {
 		identifier = ans._ansTable.GetIdentifier(alias)
 		if identifier != nil {
 			// FIXME: is reserved name?
-			ans.Service().Cache(alias, identifier)
+			ans.self().Cache(alias, identifier)
 		}
 	}
 	return identifier
 }
 
 func (ans *AddressNameDataSource) Save(alias string, identifier ID) bool {
-	if ans.AddressNameSource.Save(alias, identifier) == false {
+	if ans.AddressNameService.Save(alias, identifier) == false {
 		return false
 	}
 	if identifier == nil {
@@ -77,44 +82,45 @@ func (ans *AddressNameDataSource) Save(alias string, identifier ID) bool {
  *  ~~~~~~~~~~
  */
 type CommonIDFactory struct {
-	GeneralIDFactory
+	IDFactory
+
+	_ans IAddressNameService
+	_origin IDFactory
 }
 
-func (factory *CommonIDFactory) Init() *CommonIDFactory {
-	if factory.GeneralIDFactory.Init() != nil {
-	}
+func (factory *CommonIDFactory) Init(ans IAddressNameService, origin IDFactory) *CommonIDFactory {
+	factory._ans = ans
+	factory._origin = origin
 	return factory
 }
 
 func (factory *CommonIDFactory) CreateID(name string, address Address, terminal string) ID {
-	return idFactory.CreateID(name, address, terminal)
+	return factory._origin.CreateID(name, address, terminal)
 }
 
 func (factory *CommonIDFactory) ParseID(identifier string) ID {
 	// try ANS record
-	id := ans.GetID(identifier)
+	id := factory._ans.GetID(identifier)
 	if id == nil {
 		// parse by original factory
-		id = idFactory.ParseID(identifier)
+		id = factory._origin.ParseID(identifier)
 	}
 	return id
 }
 
-/**
- *  Shared Instances
- *  ~~~~~~~~~~~~~~~~
- */
-var ans *AddressNameService
-var idFactory IDFactory
+func UpgradeIDFactory() {
+	// ANS
+	ans := new(AddressNameDataSource).Init()
+	ObjectRetain(ans)
+
+	// origin ID factory
+	origin := IDGetFactory()
+
+	// wrap
+	factory := new(CommonIDFactory).Init(ans, origin)
+	IDSetFactory(factory)
+}
 
 func init() {
-	// ANS
-	ans = new(AddressNameService).Init()
-	src := new(AddressNameDataSource).Init(ans)
-	ans.SetSource(src)
-
-	// ID factory
-	idFactory = IDGetFactory()
-	factory := new(CommonIDFactory).Init()
-	IDSetFactory(factory)
+	UpgradeIDFactory()
 }

@@ -26,8 +26,6 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
@@ -54,7 +52,7 @@ func (processor *CommonProcessor) Messenger() ICommonMessenger {
 }
 
 func (processor *CommonProcessor) Facebook() ICommonFacebook {
-	return processor.MessengerProcessor.Facebook().(ICommonFacebook)
+	return processor.Messenger().Facebook().(ICommonFacebook)
 }
 
 // check whether group info empty

@@ -26,97 +26,74 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-/**
- *  Data Source for Facebook
- *  ~~~~~~~~~~~~~~~~~~~~~
- */
-type CommonFacebookDataSource struct {
-	BarrackSource
-}
-
-func (shadow *CommonFacebookDataSource) Init(facebook ICommonFacebook) *CommonFacebookDataSource {
-	if shadow.BarrackSource.Init(facebook) != nil {
-	}
-	return shadow
-}
-
-func (shadow *CommonFacebookDataSource) Facebook() ICommonFacebook {
-	return shadow.Barrack().(ICommonFacebook)
-}
-
-func (shadow *CommonFacebookDataSource) DB() IFacebookDatabase {
-	return shadow.Facebook().DB()
-}
-
 //-------- EntityDataSource
 
-func (shadow *CommonFacebookDataSource) GetMeta(identifier ID) Meta {
+func (facebook *CommonFacebook) GetMeta(identifier ID) Meta {
 	if identifier.IsBroadcast() {
 		// broadcast ID has no meta
 		return nil
 	}
-	return shadow.DB().GetMeta(identifier)
+	return facebook.DB().GetMeta(identifier)
 }
 
-func (shadow *CommonFacebookDataSource) GetDocument(identifier ID, docType string) Document {
-	return shadow.DB().GetDocument(identifier, docType)
+func (facebook *CommonFacebook) GetDocument(identifier ID, docType string) Document {
+	return facebook.DB().GetDocument(identifier, docType)
 }
 
 //-------- UserDataSource
 
-func (shadow *CommonFacebookDataSource) GetContacts(user ID) []ID {
-	return shadow.DB().GetContacts(user)
+func (facebook *CommonFacebook) GetContacts(user ID) []ID {
+	return facebook.DB().GetContacts(user)
 }
 
-func (shadow *CommonFacebookDataSource) GetPrivateKeysForDecryption(user ID) []DecryptKey {
-	return shadow.DB().GetPrivateKeysForDecryption(user)
+func (facebook *CommonFacebook) GetPrivateKeysForDecryption(user ID) []DecryptKey {
+	return facebook.DB().GetPrivateKeysForDecryption(user)
 }
 
-func (shadow *CommonFacebookDataSource) GetPrivateKeyForSignature(user ID) SignKey {
-	return shadow.DB().GetPrivateKeyForSignature(user)
+func (facebook *CommonFacebook) GetPrivateKeyForSignature(user ID) SignKey {
+	return facebook.DB().GetPrivateKeyForSignature(user)
 }
 
-func (shadow *CommonFacebookDataSource) GetPrivateKeyForVisaSignature(user ID) SignKey {
-	return shadow.DB().GetPrivateKeyForVisaSignature(user)
+func (facebook *CommonFacebook) GetPrivateKeyForVisaSignature(user ID) SignKey {
+	return facebook.DB().GetPrivateKeyForVisaSignature(user)
 }
 
 //-------- GroupDataSource
 
-func (shadow *CommonFacebookDataSource) GetFounder(group ID) ID {
-	founder := shadow.DB().GetFounder(group)
+func (facebook *CommonFacebook) GetFounder(group ID) ID {
+	founder := facebook.DB().GetFounder(group)
 	if founder == nil {
-		founder = shadow.BarrackSource.GetFounder(group)
+		founder = facebook.Facebook.GetFounder(group)
 	}
 	return founder
 }
 
-func (shadow *CommonFacebookDataSource) GetOwner(group ID) ID {
-	owner := shadow.DB().GetOwner(group)
+func (facebook *CommonFacebook) GetOwner(group ID) ID {
+	owner := facebook.DB().GetOwner(group)
 	if owner == nil {
-		owner = shadow.BarrackSource.GetOwner(group)
+		owner = facebook.Facebook.GetOwner(group)
 	}
 	return owner
 }
 
-func (shadow *CommonFacebookDataSource) GetMembers(group ID) []ID {
-	members := shadow.DB().GetMembers(group)
+func (facebook *CommonFacebook) GetMembers(group ID) []ID {
+	members := facebook.DB().GetMembers(group)
 	if members == nil || len(members) == 0 {
-		members = shadow.BarrackSource.GetMembers(group)
+		members = facebook.Facebook.GetMembers(group)
 	}
 	return members
 }
 
-func (shadow *CommonFacebookDataSource) GetAssistants(group ID) []ID {
-	bots := shadow.BarrackSource.GetAssistants(group)
+func (facebook *CommonFacebook) GetAssistants(group ID) []ID {
+	bots := facebook.Facebook.GetAssistants(group)
 	if bots != nil && len(bots) > 0 {
 		return bots
 	}
 	// TODO: try ANS record
 
-	return shadow.DB().GetAssistants(group)
+	return facebook.DB().GetAssistants(group)
 }

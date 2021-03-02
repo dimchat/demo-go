@@ -26,7 +26,6 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"

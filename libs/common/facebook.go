@@ -30,6 +30,7 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
+	"time"
 )
 
 type IFacebookExtension interface {
@@ -45,7 +46,6 @@ type IFacebookExtension interface {
 
 	AddMember(member ID, group ID) bool
 	RemoveMember(member ID, group ID) bool
-	SaveMembers(members []ID, group ID) bool
 	ContainMember(member ID, group ID) bool
 	ContainAssistant(bot ID, group ID) bool
 	RemoveGroup(group ID) bool
@@ -62,6 +62,11 @@ type ICommonFacebook interface {
 	DB() IFacebookDatabase
 }
 
+const (
+	EXPIRES_KEY = "expires"
+	DOCUMENT_EXPIRES = 30 * 60
+)
+
 /**
  *  Common Facebook
  *  ~~~~~~~~~~~~~~~
@@ -72,13 +77,20 @@ type CommonFacebook struct {
 	IFacebookExtension
 
 	_db IFacebookDatabase
+
+	_users []User
 }
 
 func (facebook *CommonFacebook) Init() *CommonFacebook {
 	if facebook.Facebook.Init() != nil {
 		facebook._db = nil
+		facebook._users = nil
 	}
 	return facebook
+}
+
+func (facebook *CommonFacebook) self() ICommonFacebook {
+	return facebook.Facebook.Self().(ICommonFacebook)
 }
 
 func (facebook *CommonFacebook) SetDB(db IFacebookDatabase) {
@@ -88,60 +100,167 @@ func (facebook *CommonFacebook) DB() IFacebookDatabase {
 	return facebook._db
 }
 
-func (facebook *CommonFacebook) SetHandler(handler ICommonFacebookHandler) {
-	facebook.Facebook.SetHandler(handler)
-	facebook.Facebook.SetManager(handler)
+//-------- EntityCreator
+
+func (facebook *CommonFacebook) isWaitingMeta(entity ID) bool {
+	if entity.IsBroadcast() {
+		return false
+	}
+	return facebook.self().GetMeta(entity) == nil
 }
-func (facebook *CommonFacebook) Handler() ICommonFacebookHandler {
-	return facebook.Facebook.Handler().(ICommonFacebookHandler)
+
+func (facebook *CommonFacebook) CreateUser(identifier ID) User {
+	if facebook.isWaitingMeta(identifier) {
+		return nil
+	}
+	return facebook.Facebook.CreateUser(identifier)
 }
+
+func (facebook *CommonFacebook) CreateGroup(identifier ID) Group {
+	if facebook.isWaitingMeta(identifier) {
+		return nil
+	}
+	return facebook.Facebook.CreateGroup(identifier)
+}
+
+func (facebook *CommonFacebook) GetLocalUsers() []User {
+	if facebook._users == nil {
+		facebook._users = make([]User, 0)
+		users := facebook.DB().AllUsers()
+		if users != nil {
+			self := facebook.self()
+			var usr User
+			for _, id := range users {
+				usr = self.GetUser(id)
+				if usr == nil {
+					panic(id)
+				} else {
+					facebook._users = append(facebook._users, usr)
+				}
+			}
+		}
+	}
+	return facebook._users
+}
+
+//-------- EntityManager
+
+func (facebook *CommonFacebook) SaveMeta(meta Meta, identifier ID) bool {
+	return facebook.DB().SaveMeta(meta, identifier)
+}
+
+func (facebook *CommonFacebook) SaveDocument(doc Document) bool {
+	if facebook.self().CheckDocument(doc) == false {
+		return false
+	}
+	doc.Set(EXPIRES_KEY, nil)
+	return facebook.DB().SaveDocument(doc)
+}
+
+func (facebook *CommonFacebook) SaveMembers(members []ID, group ID) bool {
+	return facebook.DB().SaveMembers(members, group)
+}
+
 
 //-------- IFacebookExtSource
 
 func (facebook *CommonFacebook) SavePrivateKey(key PrivateKey, keyType string, user User) bool {
-	return facebook.Handler().SavePrivateKey(key, keyType, user)
+	_, ok := key.(DecryptKey)
+	return facebook.DB().SavePrivateKey(user.ID(), key, keyType, true, ok)
 }
+
+//-------- Local Users
 
 func (facebook *CommonFacebook) SetCurrentUser(user User) {
-	facebook.Handler().SetCurrentUser(user)
+	facebook._users = nil
+	facebook.DB().SetCurrentUser(user.ID())
 }
+
 func (facebook *CommonFacebook) AddUser(user User) bool {
-	return facebook.Handler().AddUser(user)
+	facebook._users = nil
+	return facebook.DB().AddUser(user.ID())
 }
+
 func (facebook *CommonFacebook) RemoveUser(user User) bool {
-	return facebook.Handler().RemoveUser(user)
+	facebook._users = nil
+	return facebook.DB().RemoveUser(user.ID())
 }
+
+//-------- Contacts
 
 func (facebook *CommonFacebook) AddContact(contact ID, user ID) bool {
-	return facebook.Handler().AddContact(contact, user)
+	return facebook.DB().AddContact(contact, user)
 }
+
 func (facebook *CommonFacebook) RemoveContact(contact ID, user ID) bool {
-	return facebook.Handler().RemoveContact(contact, user)
+	return facebook.DB().RemoveContact(contact, user)
 }
+
+//-------- Relationship
 
 func (facebook *CommonFacebook) AddMember(member ID, group ID) bool {
-	return facebook.Handler().AddMember(member, group)
+	return facebook.DB().AddMember(member, group)
 }
 func (facebook *CommonFacebook) RemoveMember(member ID, group ID) bool {
-	return facebook.Handler().RemoveMember(member, group)
-}
-func (facebook *CommonFacebook) SaveMembers(members []ID, group ID) bool {
-	return facebook.Handler().SaveMembers(members, group)
+	return facebook.DB().RemoveMember(member, group)
 }
 func (facebook *CommonFacebook) ContainMember(member ID, group ID) bool {
-	return facebook.Handler().ContainMember(member, group)
+	members := facebook.self().GetMembers(group)
+	if members != nil {
+		for _, item := range members {
+			if member.Equal(item) {
+				return true
+			}
+		}
+	}
+	owner := facebook.self().GetOwner(group)
+	return owner != nil && owner.Equal(members)
 }
 func (facebook *CommonFacebook) ContainAssistant(bot ID, group ID) bool {
-	return facebook.Handler().ContainAssistant(bot, group)
+	assistants := facebook.self().GetAssistants(group)
+	if assistants != nil {
+		for _, item := range assistants {
+			if bot.Equal(item) {
+				return true
+			}
+		}
+	}
+	return false
 }
 func (facebook *CommonFacebook) RemoveGroup(group ID) bool {
-	return facebook.Handler().RemoveGroup(group)
+	return facebook.DB().RemoveGroup(group)
 }
 
+//-------- profiles
+
 func (facebook *CommonFacebook) GetName(entity ID) string {
-	return facebook.Handler().GetName(entity)
+	// get name from document
+	doc := facebook.self().GetDocument(entity, "*")
+	if doc != nil {
+		name := doc.Name()
+		if name != "" {
+			return name
+		}
+	}
+	// get name fro ID
+	return AnonymousGetName(entity)
 }
 
 func (facebook *CommonFacebook) IsExpiredDocument(doc Document, reset bool) bool {
-	return facebook.Handler().IsExpiredDocument(doc, reset)
+	now := time.Now().Unix()
+	expires := doc.Get(EXPIRES_KEY)
+	if expires == nil {
+		// set expired time
+		doc.Set(EXPIRES_KEY, now + DOCUMENT_EXPIRES)
+		return false
+	}
+	if now > expires.(int64) {
+		if reset {
+			// update expired time
+			doc.Set(EXPIRES_KEY, now + DOCUMENT_EXPIRES)
+		}
+		return true
+	} else {
+		return false
+	}
 }

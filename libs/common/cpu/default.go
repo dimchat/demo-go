@@ -27,8 +27,9 @@ package cpu
 
 import (
 	"fmt"
-	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 	. "github.com/dimchat/sdk-go/protocol"
 )
@@ -66,6 +67,7 @@ func (cpu *AnyContentProcessor) Process(content Content, rMsg ReliableMessage) C
 		if group != nil {
 			res.SetGroup(group)
 		}
+		ObjectAutorelease(res)
 		return res
 	}
 
@@ -79,7 +81,8 @@ func (cpu *AnyContentProcessor) Process(content Content, rMsg ReliableMessage) C
 	sn := content.SN()
 	env := rMsg.Envelope()
 	signature := rMsg.Get("signature")
-	receipt := new(ReceiptCommand).InitWithEnvelope(env, sn, text)
+	receipt := NewReceiptCommand(text, env, sn, nil)
 	receipt.Set("signature", signature)
+	ObjectAutorelease(receipt)
 	return receipt
 }
