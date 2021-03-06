@@ -23,28 +23,41 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package db
+package dimp
 
 import (
-	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/demo-go/sdk/common"
+	. "github.com/dimchat/mkm-go/types"
 )
 
-type LoginTable interface {
+type IClientFacebook interface {
+	ICommonFacebook
+}
 
-	/**
-	 *  Get last login command for user
-	 *
-	 * @param user - user ID
-	 * @return LoginCommand
-	 */
-	GetLoginCommand(user ID) *LoginCommand
+type ClientFacebook struct {
+	CommonFacebook
+}
 
-	/**
-	 *  Save last login command for user
-	 *
-	 * @param command - login command with user ID
-	 * @return false on failed
-	 */
-	SaveLoginCommand(cmd *LoginCommand) bool
+func (facebook *ClientFacebook) Init() *ClientFacebook {
+	if facebook.CommonFacebook.Init() != nil {
+	}
+	return facebook
+}
+
+//func (facebook *ClientFacebook) self() ICommonFacebook {
+//	return facebook.Facebook.Self().(ICommonFacebook)
+//}
+
+//
+//  Singleton
+//
+var sharedFacebook IClientFacebook
+
+func SharedFacebook() IClientFacebook {
+	return sharedFacebook
+}
+
+func init() {
+	sharedFacebook = new(ClientFacebook).Init()
+	ObjectRetain(sharedFacebook)
 }

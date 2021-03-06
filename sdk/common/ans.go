@@ -26,8 +26,7 @@
 package dimp
 
 import (
-	. "github.com/dimchat/demo-go/libs/common/db"
-	. "github.com/dimchat/mkm-go/mkm"
+	. "github.com/dimchat/demo-go/sdk/common/db"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"

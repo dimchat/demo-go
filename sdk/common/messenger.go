@@ -28,8 +28,8 @@ package dimp
 import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/protocol"
-	. "github.com/dimchat/demo-go/libs/common/cpu"
-	. "github.com/dimchat/demo-go/libs/common/protocol"
+	. "github.com/dimchat/demo-go/sdk/common/cpu"
+	. "github.com/dimchat/demo-go/sdk/common/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
 	. "github.com/dimchat/sdk-go/protocol"
@@ -71,10 +71,6 @@ func (messenger *CommonMessenger) Init() *CommonMessenger {
 	if messenger.Messenger.Init() != nil {
 	}
 	return messenger
-}
-
-func (messenger *CommonMessenger) Facebook() ICommonFacebook {
-	return messenger.Messenger.Facebook().(ICommonFacebook)
 }
 
 func (messenger *CommonMessenger) SetTransmitter(transmitter ICommonTransmitter) {
