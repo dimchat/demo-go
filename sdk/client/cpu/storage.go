@@ -117,8 +117,9 @@ func (cpu *StorageCommandProcessor) savePrivateKey(key PrivateKey, user ID) Cont
 }
 
 func (cpu *StorageCommandProcessor) processPrivateKey(sCmd StorageCommand) Content {
-	string := "<TODO: input your password>"
-	password := GeneratePassword(string)
+	// TODO: input password before querying "Stored Private Key"
+	str := "<TODO: input your password>"
+	password := GeneratePassword(str)
 	dict := cpu.decryptWithPassword(sCmd, password)
 	key := PrivateKeyParse(dict)
 	if key == nil {

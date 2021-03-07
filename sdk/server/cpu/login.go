@@ -23,41 +23,32 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/mrc"
-	. "github.com/dimchat/demo-go/sdk/common"
+	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/demo-go/sdk/utils"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/protocol"
 )
 
-type IClientFacebook interface {
-	ICommonFacebook
+type LoginCommandProcessor struct {
+	BaseCommandProcessor
 }
 
-type ClientFacebook struct {
-	CommonFacebook
-}
-
-func (facebook *ClientFacebook) Init() *ClientFacebook {
-	if facebook.CommonFacebook.Init() != nil {
+func (cpu *LoginCommandProcessor) Init() *LoginCommandProcessor {
+	if cpu.BaseCommandProcessor.Init() != nil {
 	}
-	return facebook
+	return cpu
 }
 
-//func (facebook *ClientFacebook) self() ICommonFacebook {
-//	return facebook.Facebook.Self().(ICommonFacebook)
-//}
-
-//
-//  Singleton
-//
-var sharedFacebook IClientFacebook
-
-func SharedFacebook() IClientFacebook {
-	return sharedFacebook
-}
-
-func init() {
-	sharedFacebook = new(ClientFacebook).Init()
-	ObjectRetain(sharedFacebook)
+func (cpu *LoginCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
+	sender := rMsg.Sender()
+	info := make(map[string]interface{})
+	info["ID"] = sender.String()
+	info["cmd"] = cmd.GetMap(false)
+	// post notification: USER_ONLINE
+	NotificationPost("user_online", cpu, info)
+	return NewReceiptCommand("Login received", nil, 0, nil)
 }

@@ -28,7 +28,6 @@ package dimp
 import (
 	. "github.com/dimchat/demo-go/sdk/common/db"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -49,17 +48,13 @@ func (ans *AddressNameDataSource) Init() *AddressNameDataSource {
 	return ans
 }
 
-func (ans *AddressNameDataSource) self() IAddressNameService {
-	return ans.AddressNameService.Self().(IAddressNameService)
-}
-
 func (ans *AddressNameDataSource) GetID(alias string) ID {
-	identifier := ans.self().GetID(alias)
+	identifier := ans.AddressNameService.GetID(alias)
 	if identifier == nil {
 		identifier = ans._ansTable.GetIdentifier(alias)
 		if identifier != nil {
 			// FIXME: is reserved name?
-			ans.self().Cache(alias, identifier)
+			ans.Cache(alias, identifier)
 		}
 	}
 	return identifier
@@ -68,8 +63,7 @@ func (ans *AddressNameDataSource) GetID(alias string) ID {
 func (ans *AddressNameDataSource) Save(alias string, identifier ID) bool {
 	if ans.AddressNameService.Save(alias, identifier) == false {
 		return false
-	}
-	if identifier == nil {
+	} else if identifier == nil {
 		return ans._ansTable.RemoveRecord(alias)
 	} else {
 		return ans._ansTable.AddRecord(identifier, alias)
@@ -110,7 +104,6 @@ func (factory *CommonIDFactory) ParseID(identifier string) ID {
 func UpgradeIDFactory() {
 	// ANS
 	ans := new(AddressNameDataSource).Init()
-	ObjectRetain(ans)
 
 	// origin ID factory
 	origin := IDGetFactory()

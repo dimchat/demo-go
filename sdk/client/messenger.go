@@ -28,8 +28,6 @@ package dimp
 import (
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/demo-go/sdk/common"
-	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp"
 )
 
 func createKeyCache() CipherKeyDelegate {
@@ -80,5 +78,4 @@ func SharedMessenger() IClientMessenger {
 
 func init() {
 	sharedMessenger = new(ClientMessenger).Init()
-	ObjectRetain(sharedMessenger)
 }

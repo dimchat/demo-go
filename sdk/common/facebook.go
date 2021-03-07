@@ -126,7 +126,7 @@ func (facebook *CommonFacebook) CreateGroup(identifier ID) Group {
 
 func (facebook *CommonFacebook) GetLocalUsers() []User {
 	if facebook._users == nil {
-		facebook._users = make([]User, 0)
+		facebook._users = make([]User, 0, 1)
 		users := facebook.DB().AllUsers()
 		if users != nil {
 			self := facebook.self()

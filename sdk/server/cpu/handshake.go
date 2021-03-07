@@ -23,41 +23,35 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/mrc"
-	. "github.com/dimchat/demo-go/sdk/common"
+	"github.com/dimchat/core-go/dkd"
+	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/protocol"
 )
 
-type IClientFacebook interface {
-	ICommonFacebook
+type HandshakeCommandProcessor struct {
+	BaseCommandProcessor
 }
 
-type ClientFacebook struct {
-	CommonFacebook
-}
-
-func (facebook *ClientFacebook) Init() *ClientFacebook {
-	if facebook.CommonFacebook.Init() != nil {
+func (cpu *HandshakeCommandProcessor) Init() *HandshakeCommandProcessor {
+	if cpu.BaseCommandProcessor.Init() != nil {
 	}
-	return facebook
+	return cpu
 }
 
-//func (facebook *ClientFacebook) self() ICommonFacebook {
-//	return facebook.Facebook.Self().(ICommonFacebook)
-//}
-
-//
-//  Singleton
-//
-var sharedFacebook IClientFacebook
-
-func SharedFacebook() IClientFacebook {
-	return sharedFacebook
-}
-
-func init() {
-	sharedFacebook = new(ClientFacebook).Init()
-	ObjectRetain(sharedFacebook)
+func (cpu *HandshakeCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+	hsCmd, _ := cmd.(HandshakeCommand)
+	message := hsCmd.Message()
+	if message == "DIM?" || message == "DIM!" {
+		// S -> C
+		return dkd.NewTextContent("Handshake command error: " + message)
+	} else {
+		// C -> S: Hello world!
+		//sessionKey := hsCmd.Session()
+		return nil
+	}
 }
