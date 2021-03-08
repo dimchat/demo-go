@@ -124,7 +124,3 @@ func RegisterCommonFactories() {
 	CommandProcessorRegister(MUTE, new(MuteCommandProcessor).Init())
 	CommandProcessorRegister(BLOCK, new(BlockCommandProcessor).Init())
 }
-
-func init() {
-	RegisterCommonFactories()
-}

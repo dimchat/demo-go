@@ -33,21 +33,21 @@ import (
 
 type UserInfo struct {
 
-	identifier ID
+	ID ID
 
-	meta Meta
-	visa Document
+	Meta Meta
+	Visa Document
 
-	identityKey PrivateKey
-	communicationKey PrivateKey
+	IdentityKey SignKey
+	CommunicationKey DecryptKey
 }
 
 type GroupInfo struct {
 
-	identifier ID
+	ID ID
 
-	meta Meta
-	bulletin Document
+	Meta Meta
+	Bulletin Document
 }
 
 /**
@@ -84,24 +84,26 @@ func GenerateUserInfo(name string, avatar string) *UserInfo {
 	//  OK
 	//
 	return &UserInfo{
-		identifier: identifier,
-		meta: meta,
-		visa: visa,
-		identityKey: identityKey,
-		communicationKey: communicationKey,
+		ID: identifier,
+		Meta: meta,
+		Visa: visa,
+		IdentityKey: identityKey,
+		CommunicationKey: communicationKey.(DecryptKey),
 	}
 }
 
 /**
- *  Generate station account info
+ *  Generate robot account info
  *
- * @param name - station name
- * @param logo - service provider logo URL
- * @param host - station IP
- * @param port - station port
- * @return station info
+ * @param seed - meta seed for ID.name
+ * @param name - robot name
+ * @param avatar - photo URL
+ * @return robot info
  */
-func GenerateStationInfo(name string, logo string, host string, port uint16) *UserInfo {
+func GenerateRobotInfo(seed string, name string, avatar string) *UserInfo {
+	if seed == "" {
+		seed = "robot"
+	}
 	//
 	//  Step 1. generate private key (with asymmetric algorithm)
 	//
@@ -109,7 +111,52 @@ func GenerateStationInfo(name string, logo string, host string, port uint16) *Us
 	//
 	//  Step 2. generate meta with private key
 	//
-	meta := MetaGenerate(MKM, identityKey, "")
+	meta := MetaGenerate(MKM, identityKey, seed)
+	//
+	//  Step 3. generate ID with meta
+	//
+	identifier := meta.GenerateID(ROBOT, "")
+	//
+	//  Step 4. generate visa document and sign with private key
+	//
+	visa := DocumentCreate(VISA, identifier, nil, nil).(Visa)
+	visa.SetName(name)
+	visa.SetAvatar(avatar)
+	visa.Sign(identityKey)
+	//
+	//  OK
+	//
+	return &UserInfo{
+		ID: identifier,
+		Meta: meta,
+		Visa: visa,
+		IdentityKey: identityKey,
+		CommunicationKey: identityKey.(DecryptKey),
+	}
+}
+
+/**
+ *  Generate station account info
+ *
+ * @param seed - meta seed for ID.name
+ * @param name - station name
+ * @param logo - service provider logo URL
+ * @param host - station IP
+ * @param port - station port
+ * @return station info
+ */
+func GenerateStationInfo(seed string, name string, logo string, host string, port uint16) *UserInfo {
+	if seed == "" {
+		seed = "station"
+	}
+	//
+	//  Step 1. generate private key (with asymmetric algorithm)
+	//
+	identityKey := PrivateKeyGenerate(RSA)
+	//
+	//  Step 2. generate meta with private key
+	//
+	meta := MetaGenerate(MKM, identityKey, seed)
 	//
 	//  Step 3. generate ID with meta
 	//
@@ -127,11 +174,11 @@ func GenerateStationInfo(name string, logo string, host string, port uint16) *Us
 	//  OK
 	//
 	return &UserInfo{
-		identifier: identifier,
-		meta: meta,
-		visa: profile,
-		identityKey: identityKey,
-		communicationKey: identityKey,
+		ID: identifier,
+		Meta: meta,
+		Visa: profile,
+		IdentityKey: identityKey,
+		CommunicationKey: identityKey.(DecryptKey),
 	}
 }
 
@@ -153,7 +200,7 @@ func GenerateGroupInfo(founder *UserInfo, name string, seed string) *GroupInfo {
 	//
 	//  Step 2. generate meta with founder's private key
 	//
-	meta := MetaGenerate(MKM, founder.identityKey, seed)
+	meta := MetaGenerate(MKM, founder.IdentityKey, seed)
 	//
 	//  Step 3. generate ID with meta
 	//
@@ -163,13 +210,13 @@ func GenerateGroupInfo(founder *UserInfo, name string, seed string) *GroupInfo {
 	//
 	bulletin := DocumentCreate(BULLETIN, identifier, nil, nil)
 	bulletin.SetName(name)
-	bulletin.Sign(founder.identityKey)
+	bulletin.Sign(founder.IdentityKey)
 	//
 	//  OK
 	//
 	return &GroupInfo{
-		identifier: identifier,
-		meta: meta,
-		bulletin: bulletin,
+		ID: identifier,
+		Meta: meta,
+		Bulletin: bulletin,
 	}
 }

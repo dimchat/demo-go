@@ -112,7 +112,3 @@ func UpgradeIDFactory() {
 	factory := new(CommonIDFactory).Init(ans, origin)
 	IDSetFactory(factory)
 }
-
-func init() {
-	UpgradeIDFactory()
-}

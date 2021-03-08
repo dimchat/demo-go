@@ -36,7 +36,7 @@ import (
 
 type IFacebookExtension interface {
 
-	SavePrivateKey(key PrivateKey, keyType string, user User) bool
+	SavePrivateKey(key PrivateKey, keyType string, user ID) bool
 
 	SetCurrentUser(user User)
 	AddUser(user User) bool
@@ -165,9 +165,9 @@ func (facebook *CommonFacebook) SaveMembers(members []ID, group ID) bool {
 
 //-------- IFacebookExtSource
 
-func (facebook *CommonFacebook) SavePrivateKey(key PrivateKey, keyType string, user User) bool {
+func (facebook *CommonFacebook) SavePrivateKey(key PrivateKey, keyType string, user ID) bool {
 	_, ok := key.(DecryptKey)
-	return facebook.DB().SavePrivateKey(user.ID(), key, keyType, true, ok)
+	return facebook.DB().SavePrivateKey(user, key, keyType, true, ok)
 }
 
 //-------- Local Users
