@@ -77,27 +77,3 @@ func LogError(msg string) {
 	}
 	fmt.Printf("[%s] ERROR - %s\n", now(), msg)
 }
-
-type Logging struct {
-
-}
-
-func (loggable *Logging) Debug(msg string) {
-	msg = fmt.Sprintf("%T > %s", loggable, msg)
-	LogDebug(msg)
-}
-
-func (loggable *Logging) Info(msg string) {
-	msg = fmt.Sprintf("%T > %s", loggable, msg)
-	LogInfo(msg)
-}
-
-func (loggable *Logging) Warning(msg string) {
-	msg = fmt.Sprintf("%T > %s", loggable, msg)
-	LogWarning(msg)
-}
-
-func (loggable *Logging) Error(msg string) {
-	msg = fmt.Sprintf("%T > %s", loggable, msg)
-	LogError(msg)
-}

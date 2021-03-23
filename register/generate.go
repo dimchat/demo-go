@@ -47,10 +47,10 @@ func getUserInfo(identifier ID) *UserInfo {
 
 func saveInfo(identifier ID, meta Meta, doc Document, idKey SignKey, msgKey DecryptKey) bool {
 	fmt.Println("******** ID:", identifier)
-	fmt.Println("******** meta:", meta)
-	fmt.Println("******** doc:", doc)
-	fmt.Println("******** id key:", idKey)
-	fmt.Println("******** msg key:", msgKey)
+	fmt.Println("******** meta:", meta.GetMap(false))
+	fmt.Println("******** doc:", doc.GetMap(false))
+	fmt.Println("******** id key:", idKey.GetMap(false))
+	fmt.Println("******** msg key:", msgKey.GetMap(false))
 	if identifier == nil {
 		return false
 	}

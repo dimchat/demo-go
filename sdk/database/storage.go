@@ -23,64 +23,95 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package cpu
+package db
 
 import (
 	"fmt"
-	. "github.com/dimchat/core-go/protocol"
-	. "github.com/dimchat/demo-go/sdk/common/protocol"
-	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/demo-go/sdk/common/db"
+	. "github.com/dimchat/demo-go/sdk/utils"
 )
 
-type SearchCommandProcessor struct {
-	BaseCommandProcessor
+/**
+ *  Local Storage
+ *  ~~~~~~~~~~~~~
+ */
+type Storage struct {
+
+	PrivateKeyTable
+	MetaTable
+	DocumentTable
+
+	AddressNameTable
+	LoginTable
+
+	UserTable
+	ContactTable
+	GroupTable
+
+	ProviderTable
+	StationTable
+
+	ConversationTable
+	MessageTable
+
+	MsgKeyTable
+
+	_root string
 }
 
-func (cpu *SearchCommandProcessor) Init() *SearchCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
-	return cpu
+func (db *Storage) Init() *Storage {
+	db._root = "/tmp/.dim"
+	return db
 }
 
-func (cpu *SearchCommandProcessor) parse(cmd *SearchCommand) {
-	results := cmd.Results()
-	if results == nil {
-		return
-	}
-	facebook := cpu.Facebook()
-	var identifier ID
-	var meta Meta
-	for key, value := range results {
-		identifier = IDParse(key)
-		meta = MetaParse(value)
-		if identifier == nil || meta == nil || meta.MatchID(identifier) == false {
-			// TODO: meta error
-			continue
-		}
-		facebook.SaveMeta(meta, identifier)
+func (db *Storage) SetRoot(root string) {
+	if PathIsExist(root) {
+		db._root = root
+	} else {
+		panic(root)
 	}
 }
 
-func (cpu *SearchCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	sCmd, _ := cmd.(*SearchCommand)
+//
+//  DOS
+//
 
-	cpu.parse(sCmd)
+func (db *Storage) IsExist(path string) bool {
+	return PathIsExist(path)
+}
+func (db *Storage) Remove(path string) bool {
+	return PathRemove(path)
+}
 
-	// message
-	message := sCmd.Get("message")
-	fmt.Println("search respond:", message)
-	// users
-	users := sCmd.Get("users")
-	if users != nil {
-		fmt.Println("	users:", UTF8Decode(JSONEncode(users)))
-	}
-	// results
-	results := sCmd.Get("results")
-	if results != nil {
-		fmt.Println("	results:", UTF8Decode(JSONEncode(results)))
-	}
-	return nil
+//
+//  Log
+//
+
+func (db *Storage) Debug(msg string) {
+	msg = fmt.Sprintf("Storage > %s", msg)
+	LogDebug(msg)
+}
+
+func (db *Storage) Info(msg string) {
+	msg = fmt.Sprintf("Storage > %s", msg)
+	LogInfo(msg)
+}
+
+func (db *Storage) Warning(msg string) {
+	msg = fmt.Sprintf("Storage > %s", msg)
+	LogWarning(msg)
+}
+
+func (db *Storage) Error(msg string) {
+	msg = fmt.Sprintf("Storage > %s", msg)
+	LogError(msg)
+}
+
+//
+//  Singleton
+//
+var sharedDatabase = new(Storage).Init()
+
+func Database() *Storage {
+	return sharedDatabase
 }
