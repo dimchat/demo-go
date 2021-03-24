@@ -28,6 +28,7 @@ package utils
 import (
 	. "github.com/dimchat/mkm-go/format"
 	"os"
+	"path"
 )
 
 func MakeDirs(dir string) bool {
@@ -37,6 +38,13 @@ func MakeDirs(dir string) bool {
 	} else {
 		panic(err)
 	}
+}
+
+func PathJoin(elem ...string) string {
+	return path.Join(elem...)
+}
+func PathDir(filepath string) string {
+	return path.Dir(filepath)
 }
 
 func PathIsExist(path string) bool {

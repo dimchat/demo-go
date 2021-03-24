@@ -26,6 +26,7 @@
 package db
 
 import (
+	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/protocol"
 )
@@ -41,10 +42,18 @@ type LoginTable interface {
 	GetLoginCommand(user ID) LoginCommand
 
 	/**
+	 *  Get last login message sent by user
+	 *
+	 * @param user - user ID
+	 * @return ReliableMessage
+	 */
+	GetLoginMessage(user ID) ReliableMessage
+
+	/**
 	 *  Save last login command for user
 	 *
 	 * @param command - login command with user ID
 	 * @return false on failed
 	 */
-	SaveLoginCommand(cmd LoginCommand) bool
+	SaveLoginCommandMessage(cmd LoginCommand, msg ReliableMessage) bool
 }

@@ -43,11 +43,11 @@ func (cpu *LoginCommandProcessor) Init() *LoginCommandProcessor {
 	return cpu
 }
 
-func (cpu *LoginCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+func (cpu *LoginCommandProcessor) Execute(cmd Command, msg ReliableMessage) Content {
 	loginCmd, _ := cmd.(LoginCommand)
 
 	// update contact's login status
-	sharedLoginTable.SaveLoginCommand(loginCmd)
+	sharedLoginTable.SaveLoginCommandMessage(loginCmd, msg)
 
 	// no need to response login command
 	return nil

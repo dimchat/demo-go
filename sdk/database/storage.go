@@ -29,13 +29,13 @@ import (
 	"fmt"
 	. "github.com/dimchat/demo-go/sdk/common/db"
 	. "github.com/dimchat/demo-go/sdk/utils"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/protocol"
 )
 
-/**
- *  Local Storage
- *  ~~~~~~~~~~~~~
- */
-type Storage struct {
+type Database interface {
 
 	PrivateKeyTable
 	MetaTable
@@ -56,14 +56,75 @@ type Storage struct {
 
 	MsgKeyTable
 
+	// root directory for database
+	SetRoot(root string)
+}
+
+/**
+ *  Local Storage
+ *  ~~~~~~~~~~~~~
+ */
+type Storage struct {
+	Database
+
 	_root string
+
+	//
+	//  memory caches
+	//
+
+	_identityKeys map[ID]PrivateKey         // meta keys: ID -> SK
+	_communicationKeys map[ID][]PrivateKey  // visa keys: ID -> []SK
+	_decryptionKeys map[ID][]DecryptKey     // visa keys: ID -> []SK
+
+	_metas map[ID]Meta                // meta: ID -> meta
+
+	_docs map[string]map[ID]Document  // document: type -> ID -> doc
+
+	_ans map[string]ID                // ANS: string -> ID
+
+	_loginCommands map[ID]LoginCommand     // ID -> Login Command
+	_loginMessages map[ID]ReliableMessage  // ID -> Login Message
 }
 
 func (db *Storage) Init() *Storage {
+
 	db._root = "/tmp/.dim"
+
+	// private keys
+	db._identityKeys = make(map[ID]PrivateKey)
+	db._communicationKeys = make(map[ID][]PrivateKey)
+	db._decryptionKeys = make(map[ID][]DecryptKey)
+
+	// meta
+	db._metas = make(map[ID]Meta)
+
+	// documents
+	docs := make(map[string]map[ID]Document)
+	docs[VISA] = make(map[ID]Document)
+	docs[PROFILE] = make(map[ID]Document)
+	docs[BULLETIN] = make(map[ID]Document)
+	db._docs = docs
+
+	// ANS
+	db._ans = loadANS(db)  // make(map[string]ID)
+
+	// login info
+	db._loginCommands = make(map[ID]LoginCommand)
+	db._loginMessages = make(map[ID]ReliableMessage)
+
 	return db
 }
 
+/**
+ *  Root Directory
+ *  ~~~~~~~~~~~~~~
+ *
+ *  File directory for database
+ */
+func (db *Storage) Root() string {
+	return db._root
+}
 func (db *Storage) SetRoot(root string) {
 	if PathIsExist(root) {
 		db._root = root
@@ -72,37 +133,90 @@ func (db *Storage) SetRoot(root string) {
 	}
 }
 
+// Directory for MKM entity: '.dim/mkm/{zzz}/{ADDRESS}'
+func (db *Storage) mkmDir(identifier ID) string {
+	address := identifier.Address().String()
+	pos := len(address)
+	z := string(address[pos-1])
+	y := string(address[pos-2])
+	x := string(address[pos-3])
+	w := string(address[pos-4])
+	return PathJoin(db.Root(), "mkm", z, y, x, w, address)
+}
+
+func (db *Storage) prepareDir(filepath string) bool {
+	dir := PathDir(filepath)
+	return MakeDirs(dir)
+}
+
 //
 //  DOS
 //
 
-func (db *Storage) IsExist(path string) bool {
-	return PathIsExist(path)
+//func (db *Storage) isExist(path string) bool {
+//	return PathIsExist(path)
+//}
+//func (db *Storage) remove(path string) bool {
+//	return PathRemove(path)
+//}
+
+func (db *Storage) readText(path string) string {
+	return ReadTextFile(path)
 }
-func (db *Storage) Remove(path string) bool {
-	return PathRemove(path)
+func (db *Storage) readMap(path string) map[string]interface{} {
+	return ReadJSONFile(path).(map[string]interface{})
+}
+func (db *Storage) readArray(path string) []interface{} {
+	arr := ReadJSONFile(path)
+	if arr == nil {
+		return nil
+	} else {
+		return arr.([]interface{})
+	}
+}
+
+func (db *Storage) writeText(path string, text string) bool {
+	if db.prepareDir(path) {
+		return WriteTextFile(path, text)
+	} else {
+		panic(path)
+	}
+}
+func (db *Storage) writeMap(path string, container interface{}) bool {
+	if db.prepareDir(path) {
+		return WriteJSONFile(path, container)
+	} else {
+		panic(path)
+	}
+}
+func (db *Storage) writeArray(path string, container []interface{}) bool {
+	if db.prepareDir(path) {
+		return WriteJSONFile(path, container)
+	} else {
+		panic(path)
+	}
 }
 
 //
 //  Log
 //
 
-func (db *Storage) Debug(msg string) {
+func (db *Storage) debug(msg string) {
 	msg = fmt.Sprintf("Storage > %s", msg)
 	LogDebug(msg)
 }
 
-func (db *Storage) Info(msg string) {
+func (db *Storage) log(msg string) {
 	msg = fmt.Sprintf("Storage > %s", msg)
 	LogInfo(msg)
 }
 
-func (db *Storage) Warning(msg string) {
+func (db *Storage) warning(msg string) {
 	msg = fmt.Sprintf("Storage > %s", msg)
 	LogWarning(msg)
 }
 
-func (db *Storage) Error(msg string) {
+func (db *Storage) error(msg string) {
 	msg = fmt.Sprintf("Storage > %s", msg)
 	LogError(msg)
 }
@@ -110,8 +224,12 @@ func (db *Storage) Error(msg string) {
 //
 //  Singleton
 //
-var sharedDatabase = new(Storage).Init()
+var sharedDatabase Database
 
-func Database() *Storage {
+func SharedDatabase() Database {
 	return sharedDatabase
+}
+
+func init() {
+	sharedDatabase= new(Storage).Init()
 }
