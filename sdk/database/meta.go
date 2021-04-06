@@ -57,14 +57,14 @@ func metaPath(db *Storage, identifier ID) string {
 
 func loadMeta(db *Storage, identifier ID) Meta {
 	path := metaPath(db, identifier)
-	db.log("Loading meta from: " + path)
+	db.log("Loading meta: " + path)
 	return MetaParse(db.readMap(path))
 }
 
 func saveMeta(db *Storage, meta Meta, identifier ID) bool {
 	info := meta.GetMap(false)
 	path := metaPath(db, identifier)
-	db.log("Saving meta into: " + path)
+	db.log("Saving meta: " + path)
 	return db.writeMap(path, info)
 }
 

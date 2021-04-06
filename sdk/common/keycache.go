@@ -38,17 +38,17 @@ type KeyCache struct {
 
 	_keyMap map[ID]map[ID]SymmetricKey
 
-	_database MsgKeyTable
+	_db MsgKeyTable
 }
 
 func (cache *KeyCache) Init() *KeyCache {
 	cache._keyMap = make(map[ID]map[ID]SymmetricKey)
-	cache._database = nil
+	cache._db = nil
 	return cache
 }
 
 func (cache *KeyCache) SetKeyTable(table MsgKeyTable) {
-	cache._database = table
+	cache._db = table
 }
 
 func (cache *KeyCache) GetCipherKey(sender, receiver ID, generate bool) SymmetricKey {
@@ -69,14 +69,20 @@ func (cache *KeyCache) GetCipherKey(sender, receiver ID, generate bool) Symmetri
 		}
 	}
 	// try from database
-	key = cache._database.GetKey(sender, receiver)
-	if key != nil {
-		// cache it
-		table[receiver] = key
-	} else if generate {
+	if cache._db != nil {
+		key = cache._db.GetKey(sender, receiver)
+		if key != nil {
+			// cache it
+			table[receiver] = key
+			return key
+		}
+	}
+	if generate {
 		// generate new key and store it
 		key = SymmetricKeyGenerate(AES)
-		cache._database.SaveKey(sender, receiver, key)
+		if cache._db != nil {
+			cache._db.SaveKey(sender, receiver, key)
+		}
 		// cache it
 		table[receiver] = key
 	}
@@ -89,13 +95,16 @@ func (cache *KeyCache) CacheCipherKey(sender, receiver ID, key SymmetricKey) {
 		return
 	}
 	// save into database
-	if cache._database.SaveKey(sender, receiver, key) {
-		// cache it
-		table := cache._keyMap[sender]
-		if table == nil {
-			table = make(map[ID]SymmetricKey)
-			cache._keyMap[sender] = table
+	if cache._db != nil {
+		if cache._db.SaveKey(sender, receiver, key) == false {
+			return
 		}
-		table[receiver] = key
 	}
+	// cache it
+	table := cache._keyMap[sender]
+	if table == nil {
+		table = make(map[ID]SymmetricKey)
+		cache._keyMap[sender] = table
+	}
+	table[receiver] = key
 }

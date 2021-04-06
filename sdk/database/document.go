@@ -77,14 +77,14 @@ func documentType(docType string, identifier ID) string {
 
 func loadDocument(db *Storage, identifier ID, docType string) Document {
 	path := documentPath(db, identifier, docType)
-	db.log("Loading document from: " + path)
+	db.log("Loading document: " + path)
 	return DocumentParse(db.readMap(path))
 }
 
 func saveDocument(db *Storage, doc Document) bool {
 	info := doc.GetMap(false)
 	path := documentPath(db, doc.ID(), doc.Type())
-	db.log("Saving document into: " + path)
+	db.log("Saving document: " + path)
 	return db.writeMap(path, info)
 }
 

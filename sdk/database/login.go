@@ -66,7 +66,7 @@ func loginInfoPath(db *Storage, identifier ID) string {
 
 func loadLoginInfo(db *Storage, identifier ID) (cmd LoginCommand, msg ReliableMessage) {
 	path := loginInfoPath(db, identifier)
-	db.log("Loading login info from: " + path)
+	db.log("Loading login info: " + path)
 	info := db.readMap(path)
 	if info == nil {
 		return nil, nil
@@ -82,7 +82,7 @@ func saveLoginInfo(db *Storage, cmd LoginCommand, msg ReliableMessage) bool {
 	info["msg"] = msg.GetMap(false)
 	identifier := cmd.ID()
 	path := loginInfoPath(db, identifier)
-	db.log("Saving login info into: " + path)
+	db.log("Saving login info: " + path)
 	return db.writeMap(path, info)
 }
 

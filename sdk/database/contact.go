@@ -31,81 +31,85 @@ import (
 	"strings"
 )
 
-//-------- AddressNameTable
+//-------- ContactTable
 
-func (db *Storage) GetIdentifier(alias string) ID {
-	return db._ans[alias]
+func (db *Storage) GetContacts(user ID) []ID {
+	arr := db._contacts[user]
+	if arr == nil {
+		arr = loadContacts(db, user)
+		db._contacts[user] = arr
+	}
+	return arr
 }
 
-func (db *Storage) AddRecord(identifier ID, alias string) bool {
-	if len(alias) == 0 || identifier == nil {
-		return false
+func (db *Storage) AddContact(contact ID, user ID) bool {
+	arr := db.GetContacts(user)
+	for _, item := range arr {
+		if contact.Equal(item) {
+			// duplicated
+			return false
+		}
 	}
-	if len(db._ans) == 0 {
-		panic("ANS not initialized")
-	}
-	// cache it
-	db._ans[alias] = identifier
-	// save them
-	return saveANS(db, db._ans)
+	arr = append(arr, contact)
+	return db.SaveContacts(arr, user)
 }
 
-func (db *Storage) RemoveRecord(alias string) bool {
-	if len(alias) == 0 || db._ans[alias] == nil {
-		return false
+func (db *Storage) RemoveContact(contact ID, user ID) bool {
+	arr := db.GetContacts(user)
+	var pos = -1
+	for index, id := range arr {
+		if contact.Equal(id) {
+			pos = index
+			break
+		}
 	}
-	// remove it
-	delete(db._ans, alias)
-	// save them
-	return saveANS(db, db._ans)
+	if pos == -1 {
+		// contact ID not found
+		return false
+	} else {
+		arr = append(arr[:pos], arr[pos+1:]...)
+		return db.SaveContacts(arr, user)
+	}
+}
+
+func (db *Storage) SaveContacts(contacts []ID, user ID) bool {
+	db._contacts[user] = contacts
+	return saveContacts(db, user, contacts)
 }
 
 /**
- *  Address Name Service
- *  ~~~~~~~~~~~~~~~~~~~~
+ *  Contacts file for User
+ *  ~~~~~~~~~~~~~~~~~~~~~~
  *
- *  file path: '.dim/ans.txt'
+ *  file path: '.dim/protected/{ADDRESS}/contacts.txt'
  */
 
-func ansPath(db *Storage) string {
-	return PathJoin(db.Root(), "ans.txt")
+func contactsPath(db *Storage, user ID) string {
+	return PathJoin(db.Root(), "protected", user.Address().String(), "contacts.txt")
 }
 
-func loadANS(db *Storage) map[string]ID {
-	table := make(map[string]ID)
-
-	path := ansPath(db)
-	db.log("Loading ANS records: " + path)
+func loadContacts(db *Storage, user ID) []ID {
+	path := contactsPath(db, user)
+	db.log("Loading contacts for user: " + user.String())
 	text := db.readText(path)
 	lines := strings.Split(text, "\n")
+	contacts := make([]ID, 0, len(lines))
 	for _, rec := range lines {
-		pair := strings.Split(rec, "\t")
-		if len(pair) != 2 {
-			db.error("Invalid ANS record: " + rec)
-			continue
+		id := IDParse(rec)
+		if id != nil {
+			contacts = append(contacts, id)
 		}
-		table[strings.TrimSpace(pair[0])] = IDParse(strings.TrimSpace(pair[1]))
 	}
-	//
-	//  Reserved names
-	//
-	table["all"] = EVERYONE
-	table[EVERYONE.Name()] = EVERYONE
-	table[ANYONE.Name()] = ANYONE
-	table["owner"] = ANYONE
-	table["founder"] = FOUNDER
-
-	return table
+	return contacts
 }
 
-func saveANS(db *Storage, records map[string]ID) bool {
+func saveContacts(db *Storage, user ID, contacts []ID) bool {
 	text := ""
-	for key, value := range records {
-		if value != nil {
-			text += key + "\t" + value.String() + "\n"
-		}
+	lines := IDRevert(contacts)
+	for _, rec := range lines {
+		text = text + rec + "\n"
 	}
-	path := ansPath(db)
-	db.log("Saving ANS records: " + path)
+	path := contactsPath(db, user)
+	db.log("Saving contacts for user: " + user.String())
 	return db.writeText(path, text)
 }

@@ -28,10 +28,12 @@ package db
 import (
 	"fmt"
 	. "github.com/dimchat/demo-go/sdk/common/db"
+	. "github.com/dimchat/demo-go/sdk/extensions"
 	. "github.com/dimchat/demo-go/sdk/utils"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/plugins/crypto"
 	. "github.com/dimchat/sdk-go/protocol"
 )
 
@@ -48,14 +50,6 @@ type Database interface {
 	ContactTable
 	GroupTable
 
-	ProviderTable
-	StationTable
-
-	ConversationTable
-	MessageTable
-
-	MsgKeyTable
-
 	// root directory for database
 	SetRoot(root string)
 }
@@ -68,6 +62,8 @@ type Storage struct {
 	Database
 
 	_root string
+
+	_password SymmetricKey
 
 	//
 	//  memory caches
@@ -85,11 +81,18 @@ type Storage struct {
 
 	_loginCommands map[ID]LoginCommand     // ID -> Login Command
 	_loginMessages map[ID]ReliableMessage  // ID -> Login Message
+
+	_users []ID
+	_contacts map[ID][]ID             // user contacts: ID -> []ID
+
+	_members map[ID][]ID              // group members: ID -> []ID
 }
 
 func (db *Storage) Init() *Storage {
 
 	db._root = "/tmp/.dim"
+
+	db._password = GetPlainKey()
 
 	// private keys
 	db._identityKeys = make(map[ID]PrivateKey)
@@ -113,7 +116,25 @@ func (db *Storage) Init() *Storage {
 	db._loginCommands = make(map[ID]LoginCommand)
 	db._loginMessages = make(map[ID]ReliableMessage)
 
+	// local users
+	db._users = make([]ID, 0, 1)
+	db._contacts = make(map[ID][]ID)
+
+	// group info
+	db._members = make(map[ID][]ID)
+
 	return db
+}
+
+/**
+ *  Password for private key encryption
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+func (db *Storage) Password() SymmetricKey {
+	return db._password
+}
+func (db *Storage) SetPassword(password string) {
+	db._password = GeneratePassword(password)
 }
 
 /**
@@ -164,14 +185,11 @@ func (db *Storage) readText(path string) string {
 	return ReadTextFile(path)
 }
 func (db *Storage) readMap(path string) map[string]interface{} {
-	return ReadJSONFile(path).(map[string]interface{})
-}
-func (db *Storage) readArray(path string) []interface{} {
-	arr := ReadJSONFile(path)
-	if arr == nil {
+	info := ReadJSONFile(path)
+	if info == nil {
 		return nil
 	} else {
-		return arr.([]interface{})
+		return info.(map[string]interface{})
 	}
 }
 
@@ -183,13 +201,6 @@ func (db *Storage) writeText(path string, text string) bool {
 	}
 }
 func (db *Storage) writeMap(path string, container interface{}) bool {
-	if db.prepareDir(path) {
-		return WriteJSONFile(path, container)
-	} else {
-		panic(path)
-	}
-}
-func (db *Storage) writeArray(path string, container []interface{}) bool {
 	if db.prepareDir(path) {
 		return WriteJSONFile(path, container)
 	} else {

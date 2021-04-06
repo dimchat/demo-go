@@ -91,18 +91,21 @@ func communicationKeysPath(db *Storage, identifier ID) string {
 
 func loadIdentityKey(db *Storage, identifier ID) PrivateKey {
 	path := identityKeyPath(db, identifier)
-	db.log("Loading identity key from: " + path)
+	db.log("Loading identity key: " + path)
 	return PrivateKeyParse(db.readMap(path))
 }
 func loadCommunicationKeys(db *Storage, identifier ID) []PrivateKey {
 	keys := make([]PrivateKey, 0, 1)
 	path := communicationKeysPath(db, identifier)
-	db.log("Loading communication keys from: " + path)
-	arr := db.readArray(path)
-	if arr != nil && len(arr) > 0 {
+	db.log("Loading communication keys: " + path)
+	info := db.readMap(path)
+	if info != nil {
+		arr := info["keys"].([]interface{})
 		for _, item := range arr {
 			k := PrivateKeyParse(item)
-			if k != nil {
+			if k == nil {
+				panic(item)
+			} else {
 				keys = append(keys, k)
 			}
 		}
@@ -113,21 +116,23 @@ func loadCommunicationKeys(db *Storage, identifier ID) []PrivateKey {
 func saveIdentityKey(db *Storage, identifier ID, key PrivateKey) bool {
 	info := key.GetMap(false)
 	path := identityKeyPath(db, identifier)
-	db.log("Saving identity key into: " + path)
+	db.log("Saving identity key: " + path)
 	return db.writeMap(path, info)
 }
 func saveCommunicationKeys(db *Storage, identifier ID, keys []PrivateKey) bool {
-	infos := make([]interface{}, 0, len(keys))
+	arr := make([]interface{}, 0, len(keys))
 	for _, item := range keys {
-		infos = append(infos, item.GetMap(false))
+		arr = append(arr, item.GetMap(false))
 	}
 	path := communicationKeysPath(db, identifier)
-	db.log("Saving communication keys into: " + path)
-	return db.writeArray(path, infos)
+	db.log("Saving communication keys: " + path)
+	info := make(map[string]interface{})
+	info["keys"] = arr
+	return db.writeMap(path, info)
 }
 
 // place holder
-var emptyPrivateKey = PrivateKeyGenerate(AES)
+var emptyPrivateKey = PrivateKeyGenerate(ECC)
 
 func getIdentityKey(db *Storage, identifier ID) PrivateKey {
 	// 1. try from memory cache

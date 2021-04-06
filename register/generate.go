@@ -47,39 +47,35 @@ func getUserInfo(identifier ID) *UserInfo {
 
 func saveInfo(identifier ID, meta Meta, doc Document, idKey SignKey, msgKey DecryptKey) bool {
 	fmt.Println("******** ID:", identifier)
-	fmt.Println("******** meta:", meta.GetMap(false))
-	fmt.Println("******** doc:", doc.GetMap(false))
-	fmt.Println("******** id key:", idKey.GetMap(false))
-	fmt.Println("******** msg key:", msgKey.GetMap(false))
-	if identifier == nil {
+	//fmt.Println("******** meta:", meta.GetMap(false))
+	//fmt.Println("******** doc:", doc.GetMap(false))
+	//fmt.Println("******** id key:", idKey.GetMap(false))
+	//fmt.Println("******** msg key:", msgKey.GetMap(false))
+	facebook := SharedFacebook()
+	// id key
+	identityKey, ok := idKey.(PrivateKey)
+	if ok && identityKey != nil {
+		if facebook.SavePrivateKey(identityKey, "M", identifier) == false {
+			return false
+		}
+	}
+	// msg key
+	communicationKey, ok := msgKey.(PrivateKey)
+	if ok && communicationKey != nil {
+		if facebook.SavePrivateKey(communicationKey, "V", identifier) == false {
+			return false
+		}
+	}
+	// meta
+	if facebook.SaveMeta(meta, identifier) == false {
 		return false
 	}
+	// document
+	if facebook.SaveDocument(doc) == false {
+		return false
+	}
+	// OK
 	return true
-	//facebook := SharedFacebook()
-	//// id key
-	//identityKey, ok := idKey.(PrivateKey)
-	//if ok && identityKey != nil {
-	//	if facebook.SavePrivateKey(identityKey, "M", identifier) == false {
-	//		return false
-	//	}
-	//}
-	//// msg key
-	//communicationKey, ok := msgKey.(PrivateKey)
-	//if ok && communicationKey != nil {
-	//	if facebook.SavePrivateKey(communicationKey, "V", identifier) == false {
-	//		return false
-	//	}
-	//}
-	//// meta
-	//if facebook.SaveMeta(meta, identifier) == false {
-	//	return false
-	//}
-	//// document
-	//if facebook.SaveDocument(doc) == false {
-	//	return false
-	//}
-	//// OK
-	//return true
 }
 
 func doGenerate(path string, args []string) bool {

@@ -23,45 +23,55 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package db
 
-import (
-	. "github.com/dimchat/core-go/mrc"
-	. "github.com/dimchat/demo-go/sdk/common"
-	. "github.com/dimchat/demo-go/sdk/database"
-)
+import . "github.com/dimchat/mkm-go/protocol"
 
-type IClientFacebook interface {
-	ICommonFacebook
+//-------- UserTable
+
+func (db *Storage) AllUsers() []ID {
+	return db._users
 }
 
-type ClientFacebook struct {
-	CommonFacebook
-}
-
-func (facebook *ClientFacebook) Init() *ClientFacebook {
-	if facebook.CommonFacebook.Init() != nil {
+func (db *Storage) AddUser(user ID) bool {
+	for _, id := range db._users {
+		if user.Equal(id) {
+			return false
+		}
 	}
-	return facebook
+	users := make([]ID, 0, len(db._users)+1)
+	users = append(users, user)
+	users = append(users, db._users...)
+	db._users = users
+	return true
 }
 
-//func (facebook *ClientFacebook) self() ICommonFacebook {
-//	return facebook.Facebook.Self().(ICommonFacebook)
-//}
-
-//
-//  Singleton
-//
-var sharedFacebook IClientFacebook
-
-func SharedFacebook() IClientFacebook {
-	return sharedFacebook
+func (db *Storage) RemoveUser(user ID) bool {
+	var pos = -1
+	for index, id := range db._users {
+		if user.Equal(id) {
+			pos = index
+			break
+		}
+	}
+	if pos == -1 {
+		// user ID not found
+		return false
+	} else {
+		db._users = append(db._users[:pos], db._users[pos+1:]...)
+		return true
+	}
 }
 
-func init() {
-	sharedFacebook = new(ClientFacebook).Init()
-	ObjectRetain(sharedFacebook)
+func (db *Storage) SetCurrentUser(user ID) {
+	db.RemoveUser(user)
+	db.AddUser(user)
+}
 
-	db := SharedDatabase()
-	sharedFacebook.SetDB(db)
+func (db *Storage) GetCurrentUser() ID {
+	if len(db._users) > 0 {
+		return db._users[0]
+	} else {
+		return nil
+	}
 }

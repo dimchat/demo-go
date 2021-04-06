@@ -61,6 +61,7 @@ type ICommonFacebook interface {
 	IFacebookExtension
 
 	DB() IFacebookDatabase
+	SetDB(db IFacebookDatabase)
 }
 
 const (
