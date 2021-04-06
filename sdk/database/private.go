@@ -29,6 +29,7 @@ import (
 	. "github.com/dimchat/demo-go/sdk/common/db"
 	. "github.com/dimchat/demo-go/sdk/utils"
 	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
@@ -75,32 +76,37 @@ func (db *Storage) GetPrivateKeyForVisaSignature(user ID) PrivateKey {
  *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  *  1. Identity Key      - paired to meta.key, CONSTANT
- *     file path: '.dim/private/{ADDRESS}/secret.js'
+ *     file path: '.dim/private/{ADDRESS}/secret'
  *
  *  2. Communication Key - paired to visa.key, VOLATILE
- *     file path: '.dim/private/{ADDRESS}/secret_keys.js'
+ *     file path: '.dim/private/{ADDRESS}/secret_keys'
  */
 
 func identityKeyPath(db *Storage, identifier ID) string {
-	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret.js")
+	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret")
 }
 
 func communicationKeysPath(db *Storage, identifier ID) string {
-	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret_keys.js")
+	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret_keys")
 }
 
 func loadIdentityKey(db *Storage, identifier ID) PrivateKey {
 	path := identityKeyPath(db, identifier)
 	db.log("Loading identity key: " + path)
-	return PrivateKeyParse(db.readMap(path))
+	data := db.readSecret(path)
+	if data == nil {
+		return nil
+	} else {
+		return PrivateKeyParse(JSONDecodeMap(data))
+	}
 }
 func loadCommunicationKeys(db *Storage, identifier ID) []PrivateKey {
 	keys := make([]PrivateKey, 0, 1)
 	path := communicationKeysPath(db, identifier)
 	db.log("Loading communication keys: " + path)
-	info := db.readMap(path)
-	if info != nil {
-		arr := info["keys"].([]interface{})
+	data := db.readSecret(path)
+	if data != nil {
+		arr := JSONDecodeList(data)
 		for _, item := range arr {
 			k := PrivateKeyParse(item)
 			if k == nil {
@@ -117,7 +123,7 @@ func saveIdentityKey(db *Storage, identifier ID, key PrivateKey) bool {
 	info := key.GetMap(false)
 	path := identityKeyPath(db, identifier)
 	db.log("Saving identity key: " + path)
-	return db.writeMap(path, info)
+	return db.writeSecret(path, JSONEncodeMap(info))
 }
 func saveCommunicationKeys(db *Storage, identifier ID, keys []PrivateKey) bool {
 	arr := make([]interface{}, 0, len(keys))
@@ -126,9 +132,7 @@ func saveCommunicationKeys(db *Storage, identifier ID, keys []PrivateKey) bool {
 	}
 	path := communicationKeysPath(db, identifier)
 	db.log("Saving communication keys: " + path)
-	info := make(map[string]interface{})
-	info["keys"] = arr
-	return db.writeMap(path, info)
+	return db.writeSecret(path, JSONEncodeList(arr))
 }
 
 // place holder

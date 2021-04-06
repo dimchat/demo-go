@@ -192,6 +192,14 @@ func (db *Storage) readMap(path string) map[string]interface{} {
 		return info.(map[string]interface{})
 	}
 }
+func (db *Storage) readSecret(path string) []byte {
+	data := ReadBinaryFile(path)
+	if data == nil {
+		return nil
+	} else {
+		return db._password.Decrypt(data)
+	}
+}
 
 func (db *Storage) writeText(path string, text string) bool {
 	if db.prepareDir(path) {
@@ -203,6 +211,13 @@ func (db *Storage) writeText(path string, text string) bool {
 func (db *Storage) writeMap(path string, container interface{}) bool {
 	if db.prepareDir(path) {
 		return WriteJSONFile(path, container)
+	} else {
+		panic(path)
+	}
+}
+func (db *Storage) writeSecret(path string, data []byte) bool {
+	if db.prepareDir(path) {
+		return WriteBinaryFile(path, db._password.Encrypt(data))
 	} else {
 		panic(path)
 	}
