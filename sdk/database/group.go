@@ -101,11 +101,11 @@ func (db *Storage) RemoveGroup(group ID) bool {
  *  Members file for Group
  *  ~~~~~~~~~~~~~~~~~~~~~~
  *
- *  file path: '.dim/protected/{ADDRESS}/members.txt'
+ *  file path: '.dim/mkm/{zzz}/{ADDRESS}/members.txt'
  */
 
 func membersPath(db *Storage, group ID) string {
-	return PathJoin(db.Root(), "protected", group.Address().String(), "members.txt")
+	return PathJoin(db.mkmDir(group), "members.txt")
 }
 
 func loadMembers(db *Storage, group ID) []ID {

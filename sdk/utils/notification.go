@@ -25,6 +25,8 @@
  */
 package utils
 
+import . "github.com/dimchat/mkm-go/types"
+
 /**
  *  Notification object with name, sender and extra info
  */
@@ -59,7 +61,7 @@ type BaseNotification struct {
 }
 
 func NewNotification(name string, sender interface{}, info map[string]interface{}) *BaseNotification {
-	if info == nil {
+	if ValueIsNil(info) {
 		info = make(map[string]interface{})
 	}
 	return new(BaseNotification).Init(name, sender, info)

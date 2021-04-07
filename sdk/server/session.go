@@ -29,6 +29,7 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
@@ -138,7 +139,7 @@ func (server *SessionServer) Init() *SessionServer {
 // Session factory
 func (server *SessionServer) GetSession(address SessionAddress, handler SessionHandler) Session {
 	session := server._sessions[address]
-	if session == nil && handler != nil {
+	if session == nil && !ValueIsNil(handler) {
 		// create a new session and cache it
 		session := NewSession(address, handler)
 		server._sessions[address] = session

@@ -158,10 +158,10 @@ func (db *Storage) SetRoot(root string) {
 func (db *Storage) mkmDir(identifier ID) string {
 	address := identifier.Address().String()
 	pos := len(address)
-	z := string(address[pos-1])
-	y := string(address[pos-2])
-	x := string(address[pos-3])
-	w := string(address[pos-4])
+	z := address[pos-1:pos]
+	y := address[pos-2:pos-1]
+	x := address[pos-3:pos-2]
+	w := address[pos-4:pos-3]
 	return PathJoin(db.Root(), "mkm", z, y, x, w, address)
 }
 

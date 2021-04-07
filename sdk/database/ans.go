@@ -28,6 +28,7 @@ package db
 import (
 	. "github.com/dimchat/demo-go/sdk/utils"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ func (db *Storage) GetIdentifier(alias string) ID {
 }
 
 func (db *Storage) AddRecord(identifier ID, alias string) bool {
-	if len(alias) == 0 || identifier == nil {
+	if len(alias) == 0 || ValueIsNil(identifier) {
 		return false
 	}
 	if len(db._ans) == 0 {
@@ -79,6 +80,10 @@ func loadANS(db *Storage) map[string]ID {
 	text := db.readText(path)
 	lines := strings.Split(text, "\n")
 	for _, rec := range lines {
+		if len(rec) == 0 {
+			// skip empty line
+			continue
+		}
 		pair := strings.Split(rec, "\t")
 		if len(pair) != 2 {
 			db.error("Invalid ANS record: " + rec)

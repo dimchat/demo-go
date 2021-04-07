@@ -89,11 +89,15 @@ func (facebook *CommonFacebook) GetMembers(group ID) []ID {
 }
 
 func (facebook *CommonFacebook) GetAssistants(group ID) []ID {
-	bots := facebook.Facebook.GetAssistants(group)
-	if bots != nil && len(bots) > 0 {
-		return bots
+	bots := facebook.DB().GetAssistants(group)
+	if bots == nil || len(bots) == 0 {
+		bots = facebook.Facebook.GetAssistants(group)
+		if bots == nil || len(bots) == 0 {
+			assistant := IDParse("assistant")
+			if assistant != nil {
+				bots = []ID{assistant}
+			}
+		}
 	}
-	// TODO: try ANS record
-
-	return facebook.DB().GetAssistants(group)
+	return bots
 }

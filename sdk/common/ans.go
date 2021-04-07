@@ -28,6 +28,7 @@ package dimp
 import (
 	. "github.com/dimchat/demo-go/sdk/common/db"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -63,7 +64,7 @@ func (ans *AddressNameDataSource) GetID(alias string) ID {
 func (ans *AddressNameDataSource) Save(alias string, identifier ID) bool {
 	if ans.AddressNameService.Save(alias, identifier) == false {
 		return false
-	} else if identifier == nil {
+	} else if ValueIsNil(identifier) {
 		return ans._ansTable.RemoveRecord(alias)
 	} else {
 		return ans._ansTable.AddRecord(identifier, alias)
