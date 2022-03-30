@@ -69,7 +69,7 @@ func GenerateUserInfo(name string, avatar string) *UserInfo {
 	//
 	//  Step 3. generate ID with meta
 	//
-	identifier := meta.GenerateID(MAIN, "")
+	identifier := IDGenerate(meta, MAIN, "")
 	//
 	//  Step 4. generate visa document and sign with private key
 	//
@@ -115,7 +115,7 @@ func GenerateRobotInfo(seed string, name string, avatar string) *UserInfo {
 	//
 	//  Step 3. generate ID with meta
 	//
-	identifier := meta.GenerateID(ROBOT, "")
+	identifier := IDGenerate(meta, ROBOT, "")
 	//
 	//  Step 4. generate visa document and sign with private key
 	//
@@ -160,7 +160,7 @@ func GenerateStationInfo(seed string, name string, logo string, host string, por
 	//
 	//  Step 3. generate ID with meta
 	//
-	identifier := meta.GenerateID(STATION, "")
+	identifier := IDGenerate(meta, STATION, "")
 	//
 	//  Step 4. generate visa document and sign with private key
 	//
@@ -204,7 +204,7 @@ func GenerateGroupInfo(founder *UserInfo, name string, seed string) *GroupInfo {
 	//
 	//  Step 3. generate ID with meta
 	//
-	identifier := meta.GenerateID(POLYLOGUE, "")
+	identifier := IDGenerate(meta, POLYLOGUE, "")
 	//
 	//  Step 4. generate bulletin document and sign with founder's private key
 	//

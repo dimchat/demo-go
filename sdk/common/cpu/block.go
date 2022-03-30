@@ -30,22 +30,22 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 type BlockCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func (cpu *BlockCommandProcessor) Init() *BlockCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
+func NewBlockCommandProcessor(facebook IFacebook, messenger IMessenger) *BlockCommandProcessor {
+	cpu := new(BlockCommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *BlockCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	bCmd, _ := cmd.(*BlockCommand)
-	users := bCmd.List()
+func (cpu *BlockCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+	bCmd, _ := cmd.(BlockCommand)
+	users := bCmd.BlockList()
 	if users == nil {
 		return cpu.loadBlockList()
 	} else {
@@ -53,12 +53,12 @@ func (cpu *BlockCommandProcessor) Execute(cmd Command, _ ReliableMessage) Conten
 	}
 }
 
-func (cpu *BlockCommandProcessor) loadBlockList() Content {
+func (cpu *BlockCommandProcessor) loadBlockList() []Content {
 	// TODO: load block-list from database
 	return nil
 }
 
-func (cpu *BlockCommandProcessor) saveBlockList(users []ID) Content {
+func (cpu *BlockCommandProcessor) saveBlockList(users []ID) []Content {
 	// TODO: save block-list into database
 	return nil
 }

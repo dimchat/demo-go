@@ -38,21 +38,15 @@ import (
  *  ~~~~~~~~~~~~~~~~
  */
 type CommonProcessor struct {
-	MessengerProcessor
+	MessageProcessor
 }
 
-func (processor *CommonProcessor) Init(transceiver ICommonMessenger) *CommonProcessor {
-	if processor.MessengerProcessor.Init(transceiver) != nil {
-	}
-	return processor
+func (processor *CommonProcessor) CommonMessenger() ICommonMessenger {
+	return processor.Messenger().(ICommonMessenger)
 }
 
-func (processor *CommonProcessor) Messenger() ICommonMessenger {
-	return processor.Transceiver().(ICommonMessenger)
-}
-
-func (processor *CommonProcessor) Facebook() ICommonFacebook {
-	return processor.Messenger().Facebook().(ICommonFacebook)
+func (processor *CommonProcessor) CommonFacebook() ICommonFacebook {
+	return processor.Facebook().(ICommonFacebook)
 }
 
 // check whether group info empty
@@ -76,8 +70,8 @@ func (processor *CommonProcessor) isWaitingGroup(content Content, sender ID) boo
 		return false
 	}
 	// check meta for new group ID
-	messenger := processor.Messenger()
-	facebook := processor.Facebook()
+	messenger := processor.CommonMessenger()
+	facebook := processor.CommonFacebook()
 	meta := facebook.GetMeta(group)
 	if meta == nil {
 		// NOTICE: if meta for group not found,
@@ -128,13 +122,13 @@ func (processor *CommonProcessor) isWaitingGroup(content Content, sender ID) boo
 	}
 }
 
-func (processor *CommonProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
+func (processor *CommonProcessor) ProcessContent(content Content, rMsg ReliableMessage) []Content {
 	sender := rMsg.Sender()
 	if processor.isWaitingGroup(content, sender) {
 		// save this message in a queue to wait group meta response
 		group := content.Group()
 		rMsg.Set("waiting", group.String())
-		processor.Messenger().SuspendReliableMessage(rMsg)
+		//processor.CommonMessenger().SuspendReliableMessage(rMsg)
 		return nil
 	}
 	defer func() {
@@ -148,11 +142,11 @@ func (processor *CommonProcessor) ProcessContent(content Content, rMsg ReliableM
 						panic("failed to get ID: " + text)
 					} else {
 						rMsg.Set("waiting", waiting.String())
-						processor.Messenger().SuspendReliableMessage(rMsg)
+						//processor.CommonMessenger().SuspendReliableMessage(rMsg)
 					}
 				}
 			}
 		}
 	}()
-	return processor.MessengerProcessor.ProcessContent(content, rMsg)
+	return processor.MessageProcessor.ProcessContent(content, rMsg)
 }

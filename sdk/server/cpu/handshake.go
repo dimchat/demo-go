@@ -30,17 +30,11 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 type HandshakeCommandProcessor struct {
 	BaseCommandProcessor
-}
-
-func (cpu *HandshakeCommandProcessor) Init() *HandshakeCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
-	return cpu
 }
 
 func (cpu *HandshakeCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {

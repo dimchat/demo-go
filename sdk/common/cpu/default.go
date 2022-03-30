@@ -27,23 +27,22 @@ package cpu
 
 import (
 	"fmt"
-	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/dkd"
 )
 
 type AnyContentProcessor struct {
 	BaseContentProcessor
 }
 
-func (cpu *AnyContentProcessor) Init() *AnyContentProcessor {
-	if cpu.BaseContentProcessor.Init() != nil {
-	}
+func NewAnyContentProcessor(facebook IFacebook, messenger IMessenger) *AnyContentProcessor {
+	cpu := new(AnyContentProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *AnyContentProcessor) Process(content Content, rMsg ReliableMessage) Content {
+func (cpu *AnyContentProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	var text string
 
 	// File: Image, Audio, Video
@@ -60,13 +59,8 @@ func (cpu *AnyContentProcessor) Process(content Content, rMsg ReliableMessage) C
 	case PAGE:
 		text = "Web page received"
 	default:
-		text = fmt.Sprintf("Content (type: %d) not support yet!", content.Type())
-		res := NewTextContent(text)
-		group := content.Group()
-		if group != nil {
-			res.SetGroup(group)
-		}
-		return res
+		text := fmt.Sprintf(FmtContentNotSupport, content.Type())
+		return cpu.RespondText(text, content.Group())
 	}
 
 	group := content.Group()
@@ -81,5 +75,5 @@ func (cpu *AnyContentProcessor) Process(content Content, rMsg ReliableMessage) C
 	signature := rMsg.Get("signature")
 	receipt := NewReceiptCommand(text, env, sn, nil)
 	receipt.Set("signature", signature)
-	return receipt
+	return cpu.RespondContent(receipt)
 }

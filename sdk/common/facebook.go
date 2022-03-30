@@ -26,7 +26,7 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/dimp"
+	. "github.com/dimchat/core-go/mkm"
 	. "github.com/dimchat/demo-go/sdk/extensions"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
@@ -92,7 +92,7 @@ func (facebook *CommonFacebook) Init() *CommonFacebook {
 }
 
 func (facebook *CommonFacebook) self() ICommonFacebook {
-	return facebook.Facebook.Self().(ICommonFacebook)
+	return facebook.Facebook.Source().(ICommonFacebook)
 }
 
 func (facebook *CommonFacebook) SetDB(db IFacebookDatabase) {

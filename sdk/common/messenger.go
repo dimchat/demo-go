@@ -26,13 +26,10 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/core-go/protocol"
-	. "github.com/dimchat/demo-go/sdk/common/cpu"
-	. "github.com/dimchat/demo-go/sdk/common/protocol"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
 )
 
 type IMessengerExtension interface {
@@ -65,6 +62,8 @@ type ICommonMessenger interface {
 type CommonMessenger struct {
 	Messenger
 	IMessengerExtension
+
+	//_transmitter ICommonTransmitter
 }
 
 func (messenger *CommonMessenger) Init() *CommonMessenger {
@@ -73,54 +72,47 @@ func (messenger *CommonMessenger) Init() *CommonMessenger {
 	return messenger
 }
 
-func (messenger *CommonMessenger) SetTransmitter(transmitter ICommonTransmitter) {
-	messenger.Messenger.SetTransmitter(transmitter)
-}
-func (messenger *CommonMessenger) Transmitter() ICommonTransmitter {
-	return messenger.Messenger.Transmitter().(ICommonTransmitter)
-}
+//func (messenger *CommonMessenger) SetTransmitter(transmitter ICommonTransmitter) {
+//	messenger._transmitter = transmitter
+//}
+//func (messenger *CommonMessenger) Transmitter() ICommonTransmitter {
+//	return messenger._transmitter
+//}
 
 //-------- IMessengerExtension
 
 func (messenger *CommonMessenger) QueryMeta(identifier ID) bool {
-	return messenger.Transmitter().QueryMeta(identifier)
+	//return messenger.Transmitter().QueryMeta(identifier)
+	return false
 }
 
 func (messenger *CommonMessenger) QueryDocument(identifier ID, docType string) bool {
-	return messenger.Transmitter().QueryDocument(identifier, docType)
+	//return messenger.Transmitter().QueryDocument(identifier, docType)
+	return false
 }
 
 func (messenger *CommonMessenger) QueryGroupInfo(group ID, members []ID) bool {
-	return messenger.Transmitter().QueryGroupInfo(group, members)
+	//return messenger.Transmitter().QueryGroupInfo(group, members)
+	return false
 }
 
-/**
- *  Register common parsers
- */
-func RegisterCommonFactories() {
-	// register command parsers
-	CommandRegister(SEARCH, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(SearchCommand).Init(dict)
-	}))
-	CommandRegister(ONLINE_USERS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(SearchCommand).Init(dict)
-	}))
+//-------- IInstantMessageDelegate
 
-	CommandRegister(REPORT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
-	}))
-	CommandRegister(ONLINE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
-	}))
-	CommandRegister(OFFLINE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
-	}))
-
-	// register content processors
-	ContentProcessorRegister(0, new(AnyContentProcessor).Init())
-
-	// register command processors
-	CommandProcessorRegister(RECEIPT, new(ReceiptCommandProcessor).Init())
-	CommandProcessorRegister(MUTE, new(MuteCommandProcessor).Init())
-	CommandProcessorRegister(BLOCK, new(BlockCommandProcessor).Init())
+func (messenger *CommonMessenger) SerializeKey(password SymmetricKey, iMsg InstantMessage) []byte {
+	reused := password.Get("reused")
+	if reused != nil {
+		receiver := iMsg.Receiver()
+		if receiver.IsGroup() {
+			// reuse key for grouped message
+			return nil
+		}
+		// remove before serialize key
+		password.Set("reused", nil)
+	}
+	data := messenger.Messenger.SerializeKey(password, iMsg)
+	if reused != nil {
+		// put it back
+		password.Set("reused", reused)
+	}
+	return data
 }

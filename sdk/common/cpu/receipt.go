@@ -35,13 +35,13 @@ type ReceiptCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func (cpu *ReceiptCommandProcessor) Init() *ReceiptCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
+func NewReceiptCommandProcessor(facebook IFacebook, messenger IMessenger) *ReceiptCommandProcessor {
+	cpu := new(ReceiptCommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *ReceiptCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+func (cpu *ReceiptCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	//rCmd, _ := cmd.(*ReceiptCommand)
 	// no need to response receipt command
 	return nil

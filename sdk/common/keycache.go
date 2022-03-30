@@ -26,10 +26,10 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/demo-go/sdk/common/db"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 	. "github.com/dimchat/sdk-go/plugins/crypto"
 )
 

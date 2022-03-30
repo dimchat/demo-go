@@ -92,7 +92,7 @@ func getMeta(db *Storage, identifier ID) Meta {
 
 func cacheMeta(db *Storage, meta Meta, identifier ID) bool {
 	// 1. verify meta with ID
-	if meta.MatchID(identifier) {
+	if MetaMatchID(meta, identifier) {
 		// 2. cache it
 		db._metas[identifier] = meta
 		return true

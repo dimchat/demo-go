@@ -30,7 +30,7 @@ import (
 	. "github.com/dimchat/dkd-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 //-------- LoginTable

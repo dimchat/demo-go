@@ -26,9 +26,46 @@
 package dimp
 
 import (
-	_ "github.com/dimchat/sdk-go/dimp/gpu"
+	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/demo-go/sdk/common/protocol"
+	_ "github.com/dimchat/sdk-go/dimp/cpu"
 	_ "github.com/dimchat/sdk-go/plugins"
 )
+
+/**
+ *  Register common parsers
+ */
+func RegisterCommonFactories() {
+	// register command parsers
+	CommandSetFactory(SEARCH, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+		return new(SearchCommand).Init(dict)
+	}))
+	CommandSetFactory(ONLINE_USERS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+		return new(SearchCommand).Init(dict)
+	}))
+
+	CommandSetFactory(REPORT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+		return new(ReportCommand).Init(dict)
+	}))
+	CommandSetFactory("broadcast", NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+		return new(ReportCommand).Init(dict)
+	}))
+	CommandSetFactory(ONLINE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+		return new(ReportCommand).Init(dict)
+	}))
+	CommandSetFactory(OFFLINE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+		return new(ReportCommand).Init(dict)
+	}))
+
+	//// register content processors
+	//ContentProcessorRegister(0, new(AnyContentProcessor).Init())
+	//
+	//// register command processors
+	//CommandProcessorRegister(RECEIPT, new(ReceiptCommandProcessor).Init())
+	//CommandProcessorRegister(MUTE, new(MuteCommandProcessor).Init())
+	//CommandProcessorRegister(BLOCK, new(BlockCommandProcessor).Init())
+}
 
 func init() {
 	UpgradeIDFactory()

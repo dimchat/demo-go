@@ -33,8 +33,8 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 	. "github.com/dimchat/sdk-go/plugins/crypto"
-	. "github.com/dimchat/sdk-go/protocol"
 )
 
 type Database interface {
@@ -257,5 +257,5 @@ func SharedDatabase() Database {
 }
 
 func init() {
-	sharedDatabase= new(Storage).Init()
+	sharedDatabase = new(Storage).Init()
 }

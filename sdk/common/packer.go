@@ -26,7 +26,6 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/digest"
@@ -40,22 +39,22 @@ import (
  *  ~~~~~~~~~~~~~
  */
 type CommonPacker struct {
-	MessengerPacker
+	MessagePacker
 }
 
-func (packer *CommonPacker) Init(transceiver ICommonMessenger) *CommonPacker {
-	if packer.MessengerPacker.Init(transceiver) != nil {
+func (packer *CommonPacker) Init(facebook IFacebook, messenger IMessenger) *CommonPacker {
+	if packer.MessagePacker.Init(facebook, messenger) != nil {
 	}
 	return packer
 }
 
 func (packer *CommonPacker) CipherKeyDelegate() CipherKeyDelegate {
-	return packer.Transceiver().CipherKeyDelegate()
+	return packer.Messenger().CipherKeyDelegate()
 }
 
 func (packer *CommonPacker) attachKeyDigest(rMsg ReliableMessage) {
 	if rMsg.Delegate() == nil {
-		rMsg.SetDelegate(packer.Transceiver())
+		rMsg.SetDelegate(packer.Messenger())
 	}
 	if rMsg.EncryptedKey() != nil {
 		// 'key' exists
@@ -100,7 +99,7 @@ func (packer *CommonPacker) attachKeyDigest(rMsg ReliableMessage) {
 }
 
 func (packer *CommonPacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
-	sMsg := packer.MessengerPacker.EncryptMessage(iMsg)
+	sMsg := packer.MessagePacker.EncryptMessage(iMsg)
 
 	receiver := iMsg.Receiver()
 	if receiver.IsGroup() {

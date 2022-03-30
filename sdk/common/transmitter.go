@@ -25,60 +25,60 @@
  */
 package dimp
 
-import (
-	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
-)
-
-type ICommonTransmitter interface {
-	Transmitter
-	IMessengerExtension
-}
-
-/**
- *  Common Processor
- *  ~~~~~~~~~~~~~~~~
- *
- *  Abstract Methods:
- *      // IMessengerExtension
- *      QueryMeta(identifier ID) bool
- *      QueryDocument(identifier ID, docType string) bool
- *      QueryGroupInfo(group ID, members []ID) bool
- */
-type CommonTransmitter struct {
-	MessengerTransmitter
-	IMessengerExtension
-}
-
-func (transmitter *CommonTransmitter) Init(transceiver ICommonMessenger) *CommonTransmitter {
-	if transmitter.MessengerTransmitter.Init(transceiver) != nil {
-	}
-	return transmitter
-}
-
-func (transmitter *CommonTransmitter) SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool {
-	go func() {
-		messenger := transmitter.Messenger()
-		sMsg := messenger.EncryptMessage(iMsg)
-		if sMsg == nil {
-			// public key not found?
-			//panic(iMsg)
-			return
-		}
-		rMsg := messenger.SignMessage(sMsg)
-		if rMsg == nil {
-			// TODO: set iMsg.state = error
-			panic(sMsg)
-		}
-		transmitter.SendReliableMessage(rMsg, callback, priority)
-		// TODO: if OK, set iMsg.state = sending; else set iMsg.state = waiting
-
-		// save signature for receipt
-		iMsg.Set("signature", rMsg.Get("signature"))
-
-		messenger.SaveMessage(iMsg)
-	}()
-	return true
-}
+//import (
+//	. "github.com/dimchat/dkd-go/protocol"
+//	. "github.com/dimchat/sdk-go/dimp"
+//)
+//
+//type ICommonTransmitter interface {
+//	IMessengerExtension
+//}
+//
+///**
+// *  Common Processor
+// *  ~~~~~~~~~~~~~~~~
+// *
+// *  Abstract Methods:
+// *      // IMessengerExtension
+// *      QueryMeta(identifier ID) bool
+// *      QueryDocument(identifier ID, docType string) bool
+// *      QueryGroupInfo(group ID, members []ID) bool
+// */
+//type CommonTransmitter struct {
+//	MessengerHelper
+//}
+//
+//func (transmitter *CommonTransmitter) CommonMessenger() ICommonMessenger {
+//	return transmitter.Messenger().(ICommonMessenger)
+//}
+//
+//func (transmitter *CommonTransmitter) CommonFacebook() ICommonFacebook {
+//	return transmitter.Facebook().(ICommonFacebook)
+//}
+//
+//func (transmitter *CommonTransmitter) SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool {
+//	go func() {
+//		messenger := transmitter.CommonMessenger()
+//		sMsg := messenger.EncryptMessage(iMsg)
+//		if sMsg == nil {
+//			// public key not found?
+//			//panic(iMsg)
+//			return
+//		}
+//		rMsg := messenger.SignMessage(sMsg)
+//		if rMsg == nil {
+//			// TODO: set iMsg.state = error
+//			panic(sMsg)
+//		}
+//		transmitter.SendReliableMessage(rMsg, callback, priority)
+//		// TODO: if OK, set iMsg.state = sending; else set iMsg.state = waiting
+//
+//		// save signature for receipt
+//		iMsg.Set("signature", rMsg.Get("signature"))
+//
+//		messenger.SaveMessage(iMsg)
+//	}()
+//	return true
+//}
 
 //-------- IMessengerExtension

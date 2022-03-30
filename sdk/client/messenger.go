@@ -28,23 +28,21 @@ package dimp
 import (
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/demo-go/sdk/common"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
 func createKeyCache() CipherKeyDelegate {
 	return new(KeyCache).Init()
 }
-func createTransformer(messenger IClientMessenger) Transformer {
-	return new(CommonTransformer).Init(messenger)
+func createProcessor(facebook IClientFacebook, messenger IClientMessenger) Processor {
+	return new(ClientProcessor).Init(facebook, messenger)
 }
-func createProcessor(messenger IClientMessenger) Processor {
-	return new(ClientProcessor).Init(messenger)
+func createPacker(facebook IClientFacebook, messenger IClientMessenger) Packer {
+	return new(CommonPacker).Init(facebook, messenger)
 }
-func createPacker(messenger IClientMessenger) Packer {
-	return new(CommonPacker).Init(messenger)
-}
-func createTransmitter(messenger IClientMessenger) ICommonTransmitter {
-	return new(CommonTransmitter).Init(messenger)
-}
+//func createTransmitter(messenger IClientMessenger) ICommonTransmitter {
+//	return new(CommonTransmitter).Init(messenger)
+//}
 
 type IClientMessenger interface {
 	ICommonMessenger
@@ -54,15 +52,15 @@ type ClientMessenger struct {
 	CommonMessenger
 }
 
-func (messenger *ClientMessenger) Init() *ClientMessenger {
+func (messenger *ClientMessenger) Init(facebook IClientFacebook) *ClientMessenger {
 	if messenger.CommonMessenger.Init() != nil {
 		// initialize delegates for Transceiver
 		messenger.SetCipherKeyDelegate(createKeyCache())
-		messenger.SetTransformer(createTransformer(messenger))
-		messenger.SetProcessor(createProcessor(messenger))
-		messenger.SetPacker(createPacker(messenger))
+		//messenger.SetTransformer(createTransformer(messenger))
+		messenger.SetProcessor(createProcessor(facebook, messenger))
+		messenger.SetPacker(createPacker(facebook, messenger))
 		// initialize delegates for Messenger
-		messenger.SetTransmitter(createTransmitter(messenger))
+		//messenger.SetTransmitter(createTransmitter(messenger))
 	}
 	return messenger
 }
@@ -77,5 +75,5 @@ func SharedMessenger() IClientMessenger {
 }
 
 func init() {
-	sharedMessenger = new(ClientMessenger).Init()
+	sharedMessenger = new(ClientMessenger).Init(SharedFacebook())
 }

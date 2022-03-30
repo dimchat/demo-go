@@ -33,17 +33,11 @@ import (
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 type StorageCommandProcessor struct {
 	BaseCommandProcessor
-}
-
-func (cpu *StorageCommandProcessor) Init() *StorageCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
-	return cpu
 }
 
 func (cpu *StorageCommandProcessor) decryptWithPassword(sCmd StorageCommand, pwd SymmetricKey) interface{} {

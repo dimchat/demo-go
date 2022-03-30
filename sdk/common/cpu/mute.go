@@ -30,22 +30,22 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 type MuteCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func (cpu *MuteCommandProcessor) Init() *MuteCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
+func NewMuteCommandProcessor(facebook IFacebook, messenger IMessenger) *MuteCommandProcessor {
+	cpu := new(MuteCommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *MuteCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	mCmd, _ := cmd.(*MuteCommand)
-	users := mCmd.List()
+func (cpu *MuteCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+	mCmd, _ := cmd.(MuteCommand)
+	users := mCmd.MuteList()
 	if users == nil {
 		return cpu.loadMuteList()
 	} else {
@@ -53,12 +53,12 @@ func (cpu *MuteCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content
 	}
 }
 
-func (cpu *MuteCommandProcessor) loadMuteList() Content {
+func (cpu *MuteCommandProcessor) loadMuteList() []Content {
 	// TODO: load mute-list from database
 	return nil
 }
 
-func (cpu *MuteCommandProcessor) saveMuteList(users []ID) Content {
+func (cpu *MuteCommandProcessor) saveMuteList(users []ID) []Content {
 	// TODO: save mute-list into database
 	return nil
 }

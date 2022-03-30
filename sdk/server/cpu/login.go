@@ -30,17 +30,11 @@ import (
 	. "github.com/dimchat/demo-go/sdk/utils"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/dkd"
 )
 
 type LoginCommandProcessor struct {
 	BaseCommandProcessor
-}
-
-func (cpu *LoginCommandProcessor) Init() *LoginCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
-	return cpu
 }
 
 func (cpu *LoginCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {

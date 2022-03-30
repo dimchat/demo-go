@@ -39,12 +39,6 @@ type SearchCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func (cpu *SearchCommandProcessor) Init() *SearchCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
-	return cpu
-}
-
 func (cpu *SearchCommandProcessor) parse(cmd *SearchCommand) {
 	results := cmd.Results()
 	if results == nil {
@@ -56,7 +50,7 @@ func (cpu *SearchCommandProcessor) parse(cmd *SearchCommand) {
 	for key, value := range results {
 		identifier = IDParse(key)
 		meta = MetaParse(value)
-		if identifier == nil || meta == nil || meta.MatchID(identifier) == false {
+		if identifier == nil || meta == nil || !MetaMatchID(meta, identifier) {
 			// TODO: meta error
 			continue
 		}

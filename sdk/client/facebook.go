@@ -26,7 +26,6 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/mrc"
 	. "github.com/dimchat/demo-go/sdk/common"
 	. "github.com/dimchat/demo-go/sdk/database"
 )
@@ -60,8 +59,5 @@ func SharedFacebook() IClientFacebook {
 
 func init() {
 	sharedFacebook = new(ClientFacebook).Init()
-	ObjectRetain(sharedFacebook)
-
-	db := SharedDatabase()
-	sharedFacebook.SetDB(db)
+	sharedFacebook.SetDB(SharedDatabase())
 }

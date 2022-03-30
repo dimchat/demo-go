@@ -26,42 +26,27 @@
 package dimp
 
 import (
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/demo-go/sdk/common"
 	. "github.com/dimchat/demo-go/sdk/utils"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/protocol"
-	"time"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 type ClientProcessor struct {
 	CommonProcessor
 }
 
-func (processor *ClientProcessor) Init(transceiver ICommonMessenger) *ClientProcessor {
-	if processor.CommonProcessor.Init(transceiver) != nil {
-	}
-	return processor
-}
-
-func (processor *ClientProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
-	res := processor.CommonProcessor.ProcessContent(content, rMsg)
-	if res == nil {
+func (processor *ClientProcessor) ProcessContent(content Content, rMsg ReliableMessage) []Content {
+	responses := processor.CommonProcessor.ProcessContent(content, rMsg)
+	if responses == nil || len(responses) == 0 {
 		// respond nothing
 		return nil
 	}
-	if _, ok := res.(HandshakeCommand); ok {
+	if _, ok := responses[0].(HandshakeCommand); ok {
 		// urgent command
-		return res
-	}
-
-	sender := rMsg.Sender()
-	if _, ok := res.(ReceiptCommand); ok {
-		if sender.Type() == STATION {
-			// no need to respond receipt to station
-			return nil
-		}
-		LogInfo("receipt to sender: " + sender.String())
+		return responses
 	}
 
 	// check receiver
@@ -70,11 +55,29 @@ func (processor *ClientProcessor) ProcessContent(content Content, rMsg ReliableM
 	if user == nil {
 		panic(receiver)
 	}
-	// pack message
-	env := EnvelopeCreate(user.ID(), sender, time.Now())
-	iMsg := InstantMessageCreate(env, res)
-	// normal response
-	processor.Messenger().SendInstantMessage(iMsg, nil, 1)
+	sender := rMsg.Sender()
+	//messenger := processor.Messenger()
+	// check responses
+	for _, res := range responses {
+		if res == nil {
+			// should not happen
+			continue
+		} else if _, ok := res.(ReceiptCommand); ok {
+			if sender.Type() == STATION {
+				// no need to respond receipt to station
+				LogInfo("drop receipt responding to station: " + sender.String())
+				continue
+			}
+		} else if _, ok := res.(TextContent); ok {
+			if sender.Type() == STATION {
+				// no need to respond text message to station
+				LogInfo("drop text msg responding to station: " + sender.String())
+				continue
+			}
+		}
+		// normal response
+		//messenger.SendContent()
+	}
 	// DON'T respond to station directly
 	return nil
 }

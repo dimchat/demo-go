@@ -37,20 +37,20 @@ import (
  *  ~~~~~~~~~~~~~~~~~~~
  */
 type AddressNameDataSource struct {
-	AddressNameService
+	AddressNameServer
 
 	_ansTable AddressNameTable
 }
 
 func (ans *AddressNameDataSource) Init() *AddressNameDataSource {
-	if ans.AddressNameService.Init() != nil {
+	if ans.AddressNameServer.Init() != nil {
 		ans._ansTable = nil
 	}
 	return ans
 }
 
 func (ans *AddressNameDataSource) GetID(alias string) ID {
-	identifier := ans.AddressNameService.GetID(alias)
+	identifier := ans.AddressNameServer.GetID(alias)
 	if identifier == nil {
 		identifier = ans._ansTable.GetIdentifier(alias)
 		if identifier != nil {
@@ -62,7 +62,7 @@ func (ans *AddressNameDataSource) GetID(alias string) ID {
 }
 
 func (ans *AddressNameDataSource) Save(alias string, identifier ID) bool {
-	if ans.AddressNameService.Save(alias, identifier) == false {
+	if ans.AddressNameServer.Save(alias, identifier) == false {
 		return false
 	} else if ValueIsNil(identifier) {
 		return ans._ansTable.RemoveRecord(alias)
@@ -78,11 +78,11 @@ func (ans *AddressNameDataSource) Save(alias string, identifier ID) bool {
 type CommonIDFactory struct {
 	IDFactory
 
-	_ans IAddressNameService
+	_ans AddressNameService
 	_origin IDFactory
 }
 
-func (factory *CommonIDFactory) Init(ans IAddressNameService, origin IDFactory) *CommonIDFactory {
+func (factory *CommonIDFactory) Init(ans AddressNameService, origin IDFactory) *CommonIDFactory {
 	factory._ans = ans
 	factory._origin = origin
 	return factory
