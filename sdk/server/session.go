@@ -76,7 +76,9 @@ type BaseSession struct {
 }
 
 func NewSession(address SessionAddress, handler SessionHandler) Session {
-	return new(BaseSession).Init(address, handler)
+	sess := new(BaseSession)
+	sess.Init(address, handler)
+	return sess
 }
 
 func (session *BaseSession) Init(address SessionAddress, handler SessionHandler) *BaseSession {

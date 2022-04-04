@@ -2,7 +2,7 @@
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Albert Moky
+ * Copyright (c) 2022 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,23 +27,38 @@ package cpu
 
 import (
 	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/demo-go/sdk/common/cpu"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
-type ReceiptCommandProcessor struct {
-	BaseCommandProcessor
+/**
+ *  CPU Creator
+ *  ~~~~~~~~~~~
+ *
+ *  Delegate for CPU factory
+ */
+type ClientProcessorCreator struct {
+	CommonProcessorCreator
 }
 
-func NewReceiptCommandProcessor(facebook IFacebook, messenger IMessenger) *ReceiptCommandProcessor {
-	cpu := new(ReceiptCommandProcessor)
-	cpu.Init(facebook, messenger)
-	return cpu
+//-------- IProcessorCreator
+
+func (factory *ClientProcessorCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
+	// text
+
+	// others
+	return factory.CommonProcessorCreator.CreateContentProcessor(msgType)
 }
 
-func (cpu *ReceiptCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
-	//rCmd, _ := cmd.(*ReceiptCommand)
-	// no need to response receipt command
-	return nil
+func (factory *ClientProcessorCreator) CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
+	// handshake
+	if cmdName == HANDSHAKE {
+		return NewHandshakeCommandProcessor(factory.Facebook(), factory.Messenger())
+	}
+
+	// login
+
+	// others
+	return factory.CommonProcessorCreator.CreateCommandProcessor(msgType, cmdName)
 }

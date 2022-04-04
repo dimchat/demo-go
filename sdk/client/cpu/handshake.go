@@ -29,6 +29,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 	. "github.com/dimchat/sdk-go/dimp/dkd"
 	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
@@ -37,12 +38,26 @@ type HandshakeCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func (cpu *HandshakeCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+func NewHandshakeCommandProcessor(facebook IFacebook, messenger IMessenger) *HandshakeCommandProcessor {
+	cpu := new(HandshakeCommandProcessor)
+	cpu.Init(facebook, messenger)
+	return cpu
+}
+
+//-------- IContentProcessor
+
+func (cpu *HandshakeCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+	cmd, _ := content.(Command)
+	return cpu.Execute(cmd, rMsg)
+}
+
+func (cpu *HandshakeCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	hsCmd, _ := cmd.(HandshakeCommand)
 	message := hsCmd.Message()
 	if message == "DIM?" {
 		// station ask client to handshake again
-		return HandshakeCommandRestart(hsCmd.Session())
+		res := HandshakeCommandRestart(hsCmd.Session())
+		return cpu.RespondContent(res)
 	} else if message == "DIM!" {
 		// handshake accepted by station
 		//server := cpu.Messenger().Server()

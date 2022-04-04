@@ -82,9 +82,8 @@ func (cmd *SearchCommand) Users() []ID {
 	users := cmd.Get("users")
 	if users == nil {
 		return nil
-	} else {
-		return IDConvert(users)
 	}
+	return IDConvert(users)
 }
 
 /**
@@ -96,7 +95,6 @@ func (cmd *SearchCommand) Results() map[string]interface{} {
 	results := cmd.Get("results")
 	if results == nil {
 		return nil
-	} else {
-		return results.(map[string]interface{})
 	}
+	return results.(map[string]interface{})
 }

@@ -62,12 +62,11 @@ func (cmd *ReportCommand) InitWithTitle(title string) *ReportCommand {
 }
 
 func (cmd *ReportCommand) Title() string {
-	value := cmd.Get("title")
-	if value == nil {
+	text := cmd.Get("title")
+	if text == nil {
 		return ""
-	} else {
-		return value.(string)
 	}
+	return text.(string)
 }
 
 func (cmd *ReportCommand) SetTitle(title string) {

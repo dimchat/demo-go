@@ -30,6 +30,7 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 	"strings"
 )
 
@@ -104,7 +105,7 @@ func (cpu *BaseFileContentProcessor) DownloadFileContent(content FileContent, pw
 	return false
 }
 
-func (cpu *BaseFileContentProcessor) Process(_ Content, _ ReliableMessage) Content {
+func (cpu *BaseFileContentProcessor) Process(_ Content, _ ReliableMessage) []Content {
 	// TODO: process file content
 
 	return nil

@@ -30,8 +30,8 @@ import (
 	. "github.com/dimchat/demo-go/sdk/extensions"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
-	"time"
 )
 
 type IFacebookExtension interface {
@@ -249,14 +249,14 @@ func (facebook *CommonFacebook) GetName(entity ID) string {
 }
 
 func (facebook *CommonFacebook) IsExpiredDocument(doc Document, reset bool) bool {
-	now := time.Now().Unix()
+	now := Timestamp(TimeNow())
 	expires := doc.Get(EXPIRES_KEY)
 	if expires == nil {
 		// set expired time
 		doc.Set(EXPIRES_KEY, now + DOCUMENT_EXPIRES)
 		return false
 	}
-	if now > expires.(int64) {
+	if now > int64(expires.(float64)) {
 		if reset {
 			// update expired time
 			doc.Set(EXPIRES_KEY, now + DOCUMENT_EXPIRES)

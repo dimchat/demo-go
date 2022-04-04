@@ -26,7 +26,7 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/demo-go/sdk/common/protocol"
 	_ "github.com/dimchat/sdk-go/dimp/cpu"
@@ -39,23 +39,35 @@ import (
 func RegisterCommonFactories() {
 	// register command parsers
 	CommandSetFactory(SEARCH, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(SearchCommand).Init(dict)
+		cmd := new(SearchCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(ONLINE_USERS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(SearchCommand).Init(dict)
+		cmd := new(SearchCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 
 	CommandSetFactory(REPORT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
+		cmd := new(ReportCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory("broadcast", NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
+		cmd := new(ReportCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(ONLINE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
+		cmd := new(ReportCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(OFFLINE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReportCommand).Init(dict)
+		cmd := new(ReportCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 
 	//// register content processors

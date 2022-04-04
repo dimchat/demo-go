@@ -32,7 +32,7 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 

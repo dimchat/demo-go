@@ -2,7 +2,7 @@
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Albert Moky
+ * Copyright (c) 2022 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,20 +30,57 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
 	. "github.com/dimchat/sdk-go/dimp/cpu"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
-type ReceiptCommandProcessor struct {
-	BaseCommandProcessor
+/**
+ *  CPU Creator
+ *  ~~~~~~~~~~~
+ *
+ *  Delegate for CPU factory
+ */
+type CommonProcessorCreator struct {
+	BaseCreator
 }
 
-func NewReceiptCommandProcessor(facebook IFacebook, messenger IMessenger) *ReceiptCommandProcessor {
-	cpu := new(ReceiptCommandProcessor)
-	cpu.Init(facebook, messenger)
-	return cpu
+//-------- IProcessorCreator
+
+func (factory *CommonProcessorCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
+	switch msgType {
+	// file contents
+	case FILE:
+		return NewFileContentProcessor(factory.Facebook(), factory.Messenger())
+	case IMAGE:
+		return NewFileContentProcessor(factory.Facebook(), factory.Messenger())
+	case AUDIO:
+		return NewFileContentProcessor(factory.Facebook(), factory.Messenger())
+	case VIDEO:
+		return NewFileContentProcessor(factory.Facebook(), factory.Messenger())
+	default:
+	}
+	// others
+	cpu := factory.BaseCreator.CreateContentProcessor(msgType)
+	if cpu != nil {
+		return cpu
+	}
+	// unknown
+	return NewBaseContentProcessor(factory.Facebook(), factory.Messenger())
 }
 
-func (cpu *ReceiptCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
-	//rCmd, _ := cmd.(*ReceiptCommand)
-	// no need to response receipt command
-	return nil
+func (factory *CommonProcessorCreator) CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
+	switch cmdName {
+	// receipt command
+	case RECEIPT:
+		return NewReceiptCommandProcessor(factory.Facebook(), factory.Messenger())
+	// mute command
+	case MUTE:
+		return NewMuteCommandProcessor(factory.Facebook(), factory.Messenger())
+	// block command
+	case BLOCK:
+		return NewBlockCommandProcessor(factory.Facebook(), factory.Messenger())
+	// storage
+	default:
+	}
+	// others
+	return factory.BaseCreator.CreateCommandProcessor(msgType, cmdName)
 }

@@ -51,13 +51,15 @@ func (facebook *ClientFacebook) Init() *ClientFacebook {
 //
 //  Singleton
 //
-var sharedFacebook IClientFacebook
+var sharedFacebook *ClientFacebook
 
 func SharedFacebook() IClientFacebook {
 	return sharedFacebook
 }
 
 func init() {
-	sharedFacebook = new(ClientFacebook).Init()
+	sharedFacebook = new(ClientFacebook)
+	sharedFacebook.Init()
+	sharedFacebook.SetSource(sharedFacebook)
 	sharedFacebook.SetDB(SharedDatabase())
 }

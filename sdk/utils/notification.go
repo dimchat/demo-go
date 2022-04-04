@@ -64,7 +64,9 @@ func NewNotification(name string, sender interface{}, info map[string]interface{
 	if ValueIsNil(info) {
 		info = make(map[string]interface{})
 	}
-	return new(BaseNotification).Init(name, sender, info)
+	notification := new(BaseNotification)
+	notification.Init(name, sender, info)
+	return notification
 }
 
 func (notify *BaseNotification) Init(name string, sender interface{}, info map[string]interface{}) *BaseNotification {

@@ -51,7 +51,7 @@ func (ans *AddressNameDataSource) Init() *AddressNameDataSource {
 
 func (ans *AddressNameDataSource) GetID(alias string) ID {
 	identifier := ans.AddressNameServer.GetID(alias)
-	if identifier == nil {
+	if identifier == nil && ans._ansTable != nil {
 		identifier = ans._ansTable.GetIdentifier(alias)
 		if identifier != nil {
 			// FIXME: is reserved name?
@@ -88,6 +88,10 @@ func (factory *CommonIDFactory) Init(ans AddressNameService, origin IDFactory) *
 	return factory
 }
 
+func (factory *CommonIDFactory) GenerateID(meta Meta, network NetworkType, terminal string) ID {
+	return factory._origin.GenerateID(meta, network, terminal)
+}
+
 func (factory *CommonIDFactory) CreateID(name string, address Address, terminal string) ID {
 	return factory._origin.CreateID(name, address, terminal)
 }
@@ -104,12 +108,14 @@ func (factory *CommonIDFactory) ParseID(identifier string) ID {
 
 func UpgradeIDFactory() {
 	// ANS
-	ans := new(AddressNameDataSource).Init()
+	ans := new(AddressNameDataSource)
+	ans.Init()
 
 	// origin ID factory
 	origin := IDGetFactory()
 
 	// wrap
-	factory := new(CommonIDFactory).Init(ans, origin)
+	factory := new(CommonIDFactory)
+	factory.Init(ans, origin)
 	IDSetFactory(factory)
 }

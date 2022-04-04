@@ -32,7 +32,7 @@ import (
 	. "github.com/dimchat/sdk-go/plugins/mkm"
 )
 
-func getName(network uint8) string {
+func getName(network NetworkType) string {
 	switch network {
 	case ROBOT:
 		return "Robot"
