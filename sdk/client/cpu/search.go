@@ -69,12 +69,12 @@ func (cpu *SearchCommandProcessor) Execute(cmd Command, _ ReliableMessage) Conte
 	// users
 	users := sCmd.Get("users")
 	if users != nil {
-		fmt.Println("	users:", UTF8Decode(JSONEncode(users)))
+		fmt.Println("	users:", JSONEncode(users))
 	}
 	// results
 	results := sCmd.Get("results")
 	if results != nil {
-		fmt.Println("	results:", UTF8Decode(JSONEncode(results)))
+		fmt.Println("	results:", JSONEncode(results))
 	}
 	return nil
 }

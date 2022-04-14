@@ -62,7 +62,7 @@ func loadMeta(db *Storage, identifier ID) Meta {
 }
 
 func saveMeta(db *Storage, meta Meta, identifier ID) bool {
-	info := meta.GetMap(false)
+	info := meta.Map()
 	path := metaPath(db, identifier)
 	db.log("Saving meta: " + path)
 	return db.writeMap(path, info)

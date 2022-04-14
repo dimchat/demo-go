@@ -82,14 +82,14 @@ func loadDocument(db *Storage, identifier ID, docType string) Document {
 }
 
 func saveDocument(db *Storage, doc Document) bool {
-	info := doc.GetMap(false)
+	info := doc.Map()
 	path := documentPath(db, doc.ID(), doc.Type())
 	db.log("Saving document: " + path)
 	return db.writeMap(path, info)
 }
 
 // place holder
-var emptyProfile = DocumentCreate(PROFILE, ANYONE, nil, nil)
+var emptyProfile = DocumentCreate(PROFILE, ANYONE, "", "")
 
 func getDocument(db *Storage, identifier ID, docType string) Document {
 	// 1. try from memory cache

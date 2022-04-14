@@ -78,8 +78,8 @@ func loadLoginInfo(db *Storage, identifier ID) (cmd LoginCommand, msg ReliableMe
 
 func saveLoginInfo(db *Storage, cmd LoginCommand, msg ReliableMessage) bool {
 	info := make(map[string]interface{})
-	info["cmd"] = cmd.GetMap(false)
-	info["msg"] = msg.GetMap(false)
+	info["cmd"] = cmd.Map()
+	info["msg"] = msg.Map()
 	identifier := cmd.ID()
 	path := loginInfoPath(db, identifier)
 	db.log("Saving login info: " + path)
@@ -87,7 +87,7 @@ func saveLoginInfo(db *Storage, cmd LoginCommand, msg ReliableMessage) bool {
 }
 
 // place holder
-var emptyMessage = NewRelayMessage(nil)
+var emptyMessage = NewReliableMessage(nil)
 
 func getLoginInfo(db *Storage, identifier ID) (cmd LoginCommand, msg ReliableMessage) {
 	// 1. try from memory cache

@@ -83,11 +83,11 @@ func (db *Storage) GetPrivateKeyForVisaSignature(user ID) PrivateKey {
  */
 
 func identityKeyPath(db *Storage, identifier ID) string {
-	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret")
+	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret.js")
 }
 
 func communicationKeysPath(db *Storage, identifier ID) string {
-	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret_keys")
+	return PathJoin(db.Root(), "private", identifier.Address().String(), "secret_keys.js")
 }
 
 func loadIdentityKey(db *Storage, identifier ID) PrivateKey {
@@ -97,7 +97,9 @@ func loadIdentityKey(db *Storage, identifier ID) PrivateKey {
 	if data == nil {
 		return nil
 	} else {
-		return PrivateKeyParse(JSONDecodeMap(data))
+		json := UTF8Decode(data)
+		dict := JSONDecodeMap(json)
+		return PrivateKeyParse(dict)
 	}
 }
 func loadCommunicationKeys(db *Storage, identifier ID) []PrivateKey {
@@ -106,7 +108,8 @@ func loadCommunicationKeys(db *Storage, identifier ID) []PrivateKey {
 	db.log("Loading communication keys: " + path)
 	data := db.readSecret(path)
 	if data != nil {
-		arr := JSONDecodeList(data)
+		json := UTF8Decode(data)
+		arr := JSONDecodeList(json)
 		for _, item := range arr {
 			k := PrivateKeyParse(item)
 			if k == nil {
@@ -120,19 +123,23 @@ func loadCommunicationKeys(db *Storage, identifier ID) []PrivateKey {
 }
 
 func saveIdentityKey(db *Storage, identifier ID, key PrivateKey) bool {
-	info := key.GetMap(false)
+	info := key.Map()
 	path := identityKeyPath(db, identifier)
 	db.log("Saving identity key: " + path)
-	return db.writeSecret(path, JSONEncodeMap(info))
+	json := JSONEncodeMap(info)
+	data := UTF8Encode(json)
+	return db.writeSecret(path, data)
 }
 func saveCommunicationKeys(db *Storage, identifier ID, keys []PrivateKey) bool {
 	arr := make([]interface{}, 0, len(keys))
 	for _, item := range keys {
-		arr = append(arr, item.GetMap(false))
+		arr = append(arr, item.Map())
 	}
 	path := communicationKeysPath(db, identifier)
 	db.log("Saving communication keys: " + path)
-	return db.writeSecret(path, JSONEncodeList(arr))
+	json := JSONEncodeList(arr)
+	data := UTF8Encode(json)
+	return db.writeSecret(path, data)
 }
 
 // place holder

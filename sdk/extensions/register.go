@@ -75,7 +75,7 @@ func GenerateUserInfo(name string, avatar string) *UserInfo {
 	//
 	communicationKey := PrivateKeyGenerate(RSA)
 	visaKey := communicationKey.PublicKey().(EncryptKey)
-	visa := DocumentCreate(VISA, identifier, nil, nil).(Visa)
+	visa := DocumentCreate(VISA, identifier, "", "").(Visa)
 	visa.SetName(name)
 	visa.SetAvatar(avatar)
 	visa.SetKey(visaKey)
@@ -119,7 +119,7 @@ func GenerateRobotInfo(seed string, name string, avatar string) *UserInfo {
 	//
 	//  Step 4. generate visa document and sign with private key
 	//
-	visa := DocumentCreate(VISA, identifier, nil, nil).(Visa)
+	visa := DocumentCreate(VISA, identifier, "", "").(Visa)
 	visa.SetName(name)
 	visa.SetAvatar(avatar)
 	visa.Sign(identityKey)
@@ -164,7 +164,7 @@ func GenerateStationInfo(seed string, name string, logo string, host string, por
 	//
 	//  Step 4. generate visa document and sign with private key
 	//
-	profile := DocumentCreate(PROFILE, identifier, nil, nil)
+	profile := DocumentCreate(PROFILE, identifier, "", "")
 	profile.SetName(name)
 	profile.Set("logo", logo)
 	profile.Set("host", host)
@@ -208,7 +208,7 @@ func GenerateGroupInfo(founder *UserInfo, name string, seed string) *GroupInfo {
 	//
 	//  Step 4. generate bulletin document and sign with founder's private key
 	//
-	bulletin := DocumentCreate(BULLETIN, identifier, nil, nil)
+	bulletin := DocumentCreate(BULLETIN, identifier, "", "")
 	bulletin.SetName(name)
 	bulletin.Sign(founder.IdentityKey)
 	//

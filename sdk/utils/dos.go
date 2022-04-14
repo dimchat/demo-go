@@ -109,10 +109,12 @@ func ReadJSONFile(path string) interface{} {
 	data := ReadBinaryFile(path)
 	if data == nil {
 		return nil
-	} else {
-		return JSONDecode(data)
 	}
+	json := UTF8Decode(data)
+	return JSONDecode(json)
 }
 func WriteJSONFile(path string, object interface{}) bool {
-	return WriteBinaryFile(path, JSONEncode(object))
+	json := JSONEncode(object)
+	data := UTF8Encode(json)
+	return WriteBinaryFile(path, data)
 }

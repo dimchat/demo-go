@@ -54,7 +54,8 @@ func (cpu *StorageCommandProcessor) decryptWithPassword(sCmd StorageCommand, pwd
 		panic(sCmd)
 	}
 	// 3. decode data
-	return JSONDecode(data)
+	json := UTF8Decode(data)
+	return JSONDecode(json)
 }
 
 func (cpu *StorageCommandProcessor) decryptData(sCmd StorageCommand) interface{} {
@@ -78,7 +79,8 @@ func (cpu *StorageCommandProcessor) decryptData(sCmd StorageCommand) interface{}
 		panic(sCmd)
 	}
 	// 4. decrypt key
-	dict := JSONDecodeMap(key)
+	json := UTF8Decode(key)
+	dict := JSONDecodeMap(json)
 	password := SymmetricKeyParse(dict)
 	// 5. decrypt data
 	return cpu.decryptWithPassword(sCmd, password)

@@ -29,7 +29,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/demo-go/sdk/utils"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 	. "github.com/dimchat/sdk-go/dimp/dkd"
 )
 
@@ -41,7 +41,7 @@ func (cpu *LoginCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	sender := rMsg.Sender()
 	info := make(map[string]interface{})
 	info["ID"] = sender.String()
-	info["cmd"] = cmd.GetMap(false)
+	info["cmd"] = cmd.Map()
 	// post notification: USER_ONLINE
 	NotificationPost("user_online", cpu, info)
 	return NewReceiptCommand("Login received", nil, 0, nil)
