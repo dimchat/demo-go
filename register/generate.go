@@ -47,10 +47,10 @@ func getUserInfo(identifier ID) *UserInfo {
 
 func saveInfo(identifier ID, meta Meta, doc Document, idKey SignKey, msgKey DecryptKey) bool {
 	fmt.Println("******** ID:", identifier)
-	//fmt.Println("******** meta:", meta.GetMap(false))
-	//fmt.Println("******** doc:", doc.GetMap(false))
-	//fmt.Println("******** id key:", idKey.GetMap(false))
-	//fmt.Println("******** msg key:", msgKey.GetMap(false))
+	//fmt.Println("******** meta:", meta.Map())
+	//fmt.Println("******** doc:", doc.Map())
+	//fmt.Println("******** id key:", idKey.Map())
+	//fmt.Println("******** msg key:", msgKey.Map())
 	facebook := SharedFacebook()
 	// id key
 	identityKey, ok := idKey.(PrivateKey)
